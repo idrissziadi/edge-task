@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, Mail, Calendar, Settings, Shield, CheckSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { formatUserForHeader } from "@/lib/utils";
 
 export const ProfilePage = () => {
   const [user, setUser] = useState<any>(null);
@@ -116,7 +117,7 @@ export const ProfilePage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header user={user} onLogout={() => supabase.auth.signOut()} />
+        <Header user={formatUserForHeader(user)} onLogout={() => supabase.auth.signOut()} />
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-muted rounded w-1/4"></div>
@@ -129,7 +130,7 @@ export const ProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header user={user} onLogout={() => supabase.auth.signOut()} />
+              <Header user={formatUserForHeader(user)} onLogout={() => supabase.auth.signOut()} />
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">

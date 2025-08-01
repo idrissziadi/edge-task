@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { formatUserForHeader } from "@/lib/utils";
 
 interface Goal {
   id: string;
@@ -57,7 +58,7 @@ export const GoalsPage = () => {
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
-  const [filterCategory, setFilterCategory] = useState("");
+  const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [user, setUser] = useState<any>(null);
   const { toast } = useToast();
@@ -268,7 +269,7 @@ export const GoalsPage = () => {
   };
 
   const filteredGoals = goals.filter(goal => {
-    const matchesCategory = !filterCategory || goal.category === filterCategory;
+    const matchesCategory = filterCategory === "all" || goal.category === filterCategory;
     const matchesStatus = filterStatus === "all" || 
       (filterStatus === "completed" && goal.is_completed) ||
       (filterStatus === "active" && !goal.is_completed) ||
@@ -306,7 +307,7 @@ export const GoalsPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header user={user} onLogout={() => supabase.auth.signOut()} />
+        <Header user={formatUserForHeader(user)} onLogout={() => supabase.auth.signOut()} />
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-muted rounded w-1/4"></div>
@@ -323,7 +324,7 @@ export const GoalsPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header user={user} onLogout={() => supabase.auth.signOut()} />
+              <Header user={formatUserForHeader(user)} onLogout={() => supabase.auth.signOut()} />
       
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -551,7 +552,7 @@ export const GoalsPage = () => {
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
+                              <SelectItem value="all">All Categories</SelectItem>
               {categories.map(cat => (
                 <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
               ))}
@@ -842,7 +843,7 @@ export const GoalsPage = () => {
             <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No goals found</h3>
             <p className="text-muted-foreground">
-              {filterCategory || filterStatus !== "all" ? 'Try adjusting your filters' : 'Create your first goal to get started'}
+              {filterCategory !== "all" || filterStatus !== "all" ? 'Try adjusting your filters' : 'Create your first goal to get started'}
             </p>
           </div>
         )}

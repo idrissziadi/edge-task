@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { formatUserForHeader } from "@/lib/utils";
 
 interface CalendarEvent {
   id: string;
@@ -59,7 +60,7 @@ export const CalendarPage = () => {
   const [loading, setLoading] = useState(true);
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
-  const [filterCategory, setFilterCategory] = useState("");
+  const [filterCategory, setFilterCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [user, setUser] = useState<any>(null);
   const { toast } = useToast();
@@ -340,7 +341,7 @@ export const CalendarPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header user={user} onLogout={() => supabase.auth.signOut()} />
+        <Header user={formatUserForHeader(user)} onLogout={() => supabase.auth.signOut()} />
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-muted rounded w-1/4"></div>
@@ -353,7 +354,7 @@ export const CalendarPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header user={user} onLogout={() => supabase.auth.signOut()} />
+              <Header user={formatUserForHeader(user)} onLogout={() => supabase.auth.signOut()} />
       
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { formatUserForHeader } from "@/lib/utils";
 
 interface AnalyticsData {
   dailyStats: any[];
@@ -142,7 +143,7 @@ export const AnalyticsPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header user={user} onLogout={() => supabase.auth.signOut()} />
+        <Header user={formatUserForHeader(user)} onLogout={() => supabase.auth.signOut()} />
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-muted rounded w-1/4"></div>
@@ -159,7 +160,7 @@ export const AnalyticsPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header user={user} onLogout={() => supabase.auth.signOut()} />
+              <Header user={formatUserForHeader(user)} onLogout={() => supabase.auth.signOut()} />
       
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">

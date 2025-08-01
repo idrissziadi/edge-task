@@ -14,6 +14,9 @@ import { GoalsPage } from "./pages/GoalsPage";
 import { CalendarPage } from "./pages/CalendarPage";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { TestPage } from "./components/TestPage";
+import { AuthDebug } from "./components/AuthDebug";
+import { DatabaseTest } from "./components/DatabaseTest";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +64,13 @@ const App = () => (
               <AdminPage />
             </ProtectedRoute>
           } />
+          <Route path="/test" element={
+            <ProtectedRoute>
+              <TestPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/debug" element={<AuthDebug />} />
+          <Route path="/db-test" element={<DatabaseTest />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

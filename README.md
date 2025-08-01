@@ -1,73 +1,195 @@
-# Welcome to your Lovable project
+# Edge Task - Application de Gestion de Tâches
 
-## Project info
+Une application moderne de gestion de tâches et d'objectifs construite avec React, TypeScript, Tailwind CSS et Supabase.
 
-**URL**: https://lovable.dev/projects/b81afc2f-749a-4548-b183-6b33f9ad21c7
+## 🚀 Fonctionnalités
 
-## How can I edit this code?
+### ✅ Authentification
+- Connexion/Inscription avec Supabase Auth
+- Protection des routes avec `ProtectedRoute`
+- Gestion des sessions utilisateur
+- Redirection automatique vers le dashboard après connexion
 
-There are several ways of editing your application.
+### 📊 Dashboard Dynamique
+- Statistiques en temps réel des tâches et objectifs
+- Affichage des tâches récentes
+- Navigation rapide vers toutes les sections
+- Interface responsive et moderne
 
-**Use Lovable**
+### 📝 Gestion des Tâches
+- Création, modification et suppression de tâches
+- Priorités (Faible, Moyenne, Haute)
+- Dates d'échéance
+- Tâches récurrentes
+- Filtrage et tri avancés
+- Actions en lot (compléter/supprimer plusieurs tâches)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b81afc2f-749a-4548-b183-6b33f9ad21c7) and start prompting.
+### 🎯 Gestion des Objectifs
+- Création d'objectifs avec progression
+- Catégorisation des objectifs
+- Suivi de la progression
+- Dates d'échéance
+- Statistiques de performance
 
-Changes made via Lovable will be committed automatically to this repo.
+### 📅 Calendrier
+- Vue calendrier des tâches et événements
+- Création d'événements
+- Rappels et notifications
+- Intégration avec les tâches
 
-**Use your preferred IDE**
+### 📈 Analytics
+- Graphiques de performance
+- Statistiques détaillées
+- Tendances de productivité
+- Rapports personnalisés
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 👤 Profil Utilisateur
+- Gestion du profil utilisateur
+- Préférences personnalisées
+- Statistiques personnelles
+- Historique des activités
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 🔧 Administration
+- Gestion des utilisateurs (admin)
+- Statistiques système
+- Monitoring des performances
+- Gestion des rôles
 
-Follow these steps:
+## 🛠️ Technologies Utilisées
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- **Frontend**: React 18, TypeScript, Vite
+- **UI**: Tailwind CSS, shadcn/ui, Lucide React
+- **Backend**: Supabase (Auth, Database, Functions)
+- **Routing**: React Router DOM
+- **State Management**: React Query (TanStack Query)
+- **Notifications**: React Hot Toast, Sonner
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## 📦 Installation
 
-# Step 3: Install the necessary dependencies.
-npm i
+1. **Cloner le projet**
+```bash
+git clone <repository-url>
+cd edge-task
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+2. **Installer les dépendances**
+```bash
+npm install
+```
+
+3. **Configurer Supabase**
+```bash
+# Exécuter le script de configuration de la base de données
+./setup-database.sh
+```
+
+4. **Démarrer le serveur de développement**
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 🗄️ Structure de la Base de Données
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Tables Principales
 
-**Use GitHub Codespaces**
+#### `tasks`
+- `id` (UUID, Primary Key)
+- `title` (TEXT, NOT NULL)
+- `description` (TEXT)
+- `priority` (TEXT: 'low', 'medium', 'high')
+- `deadline` (TIMESTAMP)
+- `is_completed` (BOOLEAN)
+- `is_recurring` (BOOLEAN)
+- `recurrence_rule` (TEXT)
+- `user_id` (UUID, Foreign Key)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+#### `goals`
+- `id` (UUID, Primary Key)
+- `title` (TEXT, NOT NULL)
+- `description` (TEXT)
+- `category` (TEXT, NOT NULL)
+- `target_value` (NUMERIC, NOT NULL)
+- `current_value` (NUMERIC)
+- `unit` (TEXT, NOT NULL)
+- `deadline` (TIMESTAMP)
+- `is_completed` (BOOLEAN)
+- `priority` (TEXT: 'low', 'medium', 'high')
+- `user_id` (UUID, Foreign Key)
 
-## What technologies are used for this project?
+#### `user_profiles`
+- `id` (UUID, Primary Key)
+- `auth_user_id` (UUID, Foreign Key)
+- `name` (TEXT)
+- `avatar_url` (TEXT)
+- `role` (TEXT, DEFAULT 'user')
 
-This project is built with:
+## 🔐 Sécurité
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Row Level Security (RLS)** activé sur toutes les tables
+- **Politiques de sécurité** pour isoler les données par utilisateur
+- **Authentification** gérée par Supabase Auth
+- **Protection des routes** avec composant `ProtectedRoute`
 
-## How can I deploy this project?
+## 🎨 Interface Utilisateur
 
-Simply open [Lovable](https://lovable.dev/projects/b81afc2f-749a-4548-b183-6b33f9ad21c7) and click on Share -> Publish.
+### Navigation
+- **Header responsive** avec menu de navigation
+- **Navigation par icônes** pour un accès rapide
+- **Indicateurs visuels** pour les pages actives
+- **Menu mobile** pour les petits écrans
 
-## Can I connect a custom domain to my Lovable project?
+### Composants UI
+- **Design system** cohérent avec shadcn/ui
+- **Thème sombre/clair** supporté
+- **Animations fluides** et transitions
+- **Accessibilité** optimisée
 
-Yes, you can!
+## 📱 Fonctionnalités Avancées
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Services Dynamiques
+- **taskService**: Gestion complète des tâches
+- **goalService**: Gestion des objectifs
+- **Données en temps réel** avec Supabase
+- **Gestion d'erreurs** robuste
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### Fonctionnalités Interactives
+- **Drag & Drop** pour réorganiser les tâches
+- **Recherche en temps réel**
+- **Filtres avancés** par statut, priorité, date
+- **Actions en lot** pour gérer plusieurs éléments
+
+## 🚀 Déploiement
+
+### Prérequis
+- Compte Supabase
+- Variables d'environnement configurées
+- Base de données migrée
+
+### Étapes
+1. Configurer les variables d'environnement
+2. Exécuter les migrations de base de données
+3. Déployer les fonctions Supabase
+4. Build et déployer l'application
+
+## 🤝 Contribution
+
+1. Fork le projet
+2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
+3. Commit les changements (`git commit -m 'Add some AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
+
+## 📄 Licence
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+
+## 🆘 Support
+
+Pour toute question ou problème :
+- Ouvrir une issue sur GitHub
+- Consulter la documentation Supabase
+- Vérifier les logs de développement
+
+---
+
+**Développé avec ❤️ en utilisant React, TypeScript et Supabase**

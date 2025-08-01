@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { formatUserForHeader } from "@/lib/utils";
 
 interface User {
   id: string;
@@ -59,7 +60,7 @@ export const AdminPage = () => {
   });
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'tasks'>('overview');
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterRole, setFilterRole] = useState("");
+  const [filterRole, setFilterRole] = useState("all");
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -182,14 +183,14 @@ export const AdminPage = () => {
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          user.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = !filterRole || user.role === filterRole;
+    const matchesRole = filterRole === "all" || user.role === filterRole;
     return matchesSearch && matchesRole;
   });
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header user={user} onLogout={() => supabase.auth.signOut()} />
+        <Header user={formatUserForHeader(user)} onLogout={() => supabase.auth.signOut()} />
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-muted rounded w-1/4"></div>
@@ -206,7 +207,7 @@ export const AdminPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header user={user} onLogout={() => supabase.auth.signOut()} />
+              <Header user={formatUserForHeader(user)} onLogout={() => supabase.auth.signOut()} />
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
@@ -347,7 +348,7 @@ export const AdminPage = () => {
                   <SelectValue placeholder="Filter by role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Roles</SelectItem>
+                  <SelectItem value="all">All Roles</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="user">User</SelectItem>
                 </SelectContent>

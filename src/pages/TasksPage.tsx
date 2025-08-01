@@ -14,24 +14,16 @@ import { Progress } from "@/components/ui/progress";
 import { Plus, Search, Filter, CheckSquare, Calendar, AlertCircle, Trash2, Edit, Clock, Star, Archive, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { formatUserForHeader } from "@/lib/utils";
+import { taskService, Task } from "@/lib/taskService";
 
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  priority: 'low' | 'medium' | 'high';
-  deadline?: string;
-  is_completed: boolean;
-  is_recurring: boolean;
-  created_at: string;
-  updated_at: string;
-}
+
 
 export const TasksPage = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterPriority, setFilterPriority] = useState("");
+  const [filterPriority, setFilterPriority] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("created_at");
   const [sortOrder, setSortOrder] = useState("desc");
@@ -62,12 +54,8 @@ export const TasksPage = () => {
 
   const fetchTasks = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('task-controller', {
-        method: 'GET'
-      });
-
-      if (error) throw error;
-      setTasks(data?.tasks || []);
+      const tasks = await taskService.getTasks();
+      setTasks(tasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       toast({
@@ -82,31 +70,33 @@ export const TasksPage = () => {
 
   const createTask = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('task-controller', {
-        body: { 
-          action: 'create',
-          ...newTask,
-          deadline: newTask.deadline || null
-        }
+      const task = await taskService.createTask({
+        title: newTask.title,
+        description: newTask.description,
+        priority: newTask.priority as 'low' | 'medium' | 'high',
+        deadline: newTask.deadline || undefined,
+        is_completed: false,
+        is_recurring: newTask.is_recurring,
+        recurrence_rule: newTask.recurrence_rule
       });
 
-      if (error) throw error;
-      
-      setTasks(prev => [data.task, ...prev]);
-      setIsCreateDialogOpen(false);
-      setNewTask({
-        title: "",
-        description: "",
-        priority: "medium",
-        deadline: "",
-        is_recurring: false,
-        recurrence_rule: ""
-      });
-      
-      toast({
-        title: "Success",
-        description: "Task created successfully"
-      });
+      if (task) {
+        setTasks(prev => [task, ...prev]);
+        setIsCreateDialogOpen(false);
+        setNewTask({
+          title: "",
+          description: "",
+          priority: "medium",
+          deadline: "",
+          is_recurring: false,
+          recurrence_rule: ""
+        });
+        
+        toast({
+          title: "Success",
+          description: "Task created successfully",
+        });
+      }
     } catch (error) {
       console.error('Error creating task:', error);
       toast({
@@ -119,21 +109,18 @@ export const TasksPage = () => {
 
   const updateTask = async (taskId: string, updates: Partial<Task>) => {
     try {
-      const { data, error } = await supabase.functions.invoke('task-controller', {
-        method: 'PUT',
-        body: updates
-      });
-
-      if (error) throw error;
+      const updatedTask = await taskService.updateTask(taskId, updates);
       
-      setTasks(prev => prev.map(task => 
-        task.id === taskId ? { ...task, ...updates } : task
-      ));
-      
-      toast({
-        title: "Success",
-        description: "Task updated successfully"
-      });
+      if (updatedTask) {
+        setTasks(prev => prev.map(task => 
+          task.id === taskId ? updatedTask : task
+        ));
+        
+        toast({
+          title: "Success",
+          description: "Task updated successfully",
+        });
+      }
     } catch (error) {
       console.error('Error updating task:', error);
       toast({
@@ -145,23 +132,18 @@ export const TasksPage = () => {
   };
   const toggleComplete = async (taskId: string) => {
     try {
-      const { error } = await supabase.functions.invoke('task-controller', {
-        body: { 
-          action: 'toggleComplete',
-          taskId
-        }
-      });
-
-      if (error) throw error;
+      const success = await taskService.toggleTaskCompletion(taskId);
       
-      setTasks(prev => prev.map(task => 
-        task.id === taskId ? { ...task, is_completed: !task.is_completed } : task
-      ));
-      
-      toast({
-        title: "Success",
-        description: "Task updated successfully"
-      });
+      if (success) {
+        setTasks(prev => prev.map(task => 
+          task.id === taskId ? { ...task, is_completed: !task.is_completed } : task
+        ));
+        
+        toast({
+          title: "Success",
+          description: "Task updated successfully",
+        });
+      }
     } catch (error) {
       console.error('Error toggling task:', error);
       toast({
@@ -174,21 +156,16 @@ export const TasksPage = () => {
 
   const deleteTask = async (taskId: string) => {
     try {
-      const { error } = await supabase.functions.invoke('task-controller', {
-        body: { 
-          action: 'delete',
-          taskId
-        }
-      });
-
-      if (error) throw error;
+      const success = await taskService.deleteTask(taskId);
       
-      setTasks(prev => prev.filter(task => task.id !== taskId));
-      
-      toast({
-        title: "Success",
-        description: "Task deleted successfully"
-      });
+      if (success) {
+        setTasks(prev => prev.filter(task => task.id !== taskId));
+        
+        toast({
+          title: "Success",
+          description: "Task deleted successfully",
+        });
+      }
     } catch (error) {
       console.error('Error deleting task:', error);
       toast({
@@ -225,7 +202,7 @@ export const TasksPage = () => {
   };
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPriority = !filterPriority || task.priority === filterPriority;
+    const matchesPriority = filterPriority === "all" || task.priority === filterPriority;
     const matchesStatus = filterStatus === "all" || 
       (filterStatus === "completed" && task.is_completed) ||
       (filterStatus === "pending" && !task.is_completed) ||
@@ -270,7 +247,12 @@ export const TasksPage = () => {
   const stats = getTaskStats();
   return (
     <div className="min-h-screen bg-background">
-      <Header user={user} onLogout={() => supabase.auth.signOut()} />
+              <Header 
+          user={formatUserForHeader(user)} 
+          onLogout={() => supabase.auth.signOut()}
+          onNotificationsClick={() => toast({ title: "Notifications", description: "No new notifications" })}
+          onSettingsClick={() => toast({ title: "Settings", description: "Settings panel coming soon" })}
+        />
       
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -449,7 +431,7 @@ export const TasksPage = () => {
               <SelectValue placeholder="Filter by priority" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Priorities</SelectItem>
+                              <SelectItem value="all">All Priorities</SelectItem>
               <SelectItem value="high">High</SelectItem>
               <SelectItem value="medium">Medium</SelectItem>
               <SelectItem value="low">Low</SelectItem>

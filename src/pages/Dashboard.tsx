@@ -16,55 +16,54 @@ import {
   Calendar,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { formatUserForHeader } from "@/lib/utils";
+import { taskService, TaskStats } from "@/lib/taskService";
+import { goalService, GoalStats } from "@/lib/goalService";
 
 export const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
-  const [stats, setStats] = useState<any>(null);
+  const [taskStats, setTaskStats] = useState<TaskStats>({
+    total: 0,
+    completed: 0,
+    pending: 0,
+    overdue: 0,
+    completionRate: 0
+  });
+  const [goalStats, setGoalStats] = useState<GoalStats>({
+    total: 0,
+    completed: 0,
+    active: 0,
+    overdue: 0,
+    completionRate: 0
+  });
   const [recentTasks, setRecentTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log('Dashboard - Component mounted');
     checkUser();
     loadDashboardData();
   }, []);
-
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    setUser(user);
-  };
 
   const loadDashboardData = async () => {
     try {
       setLoading(true);
       
-      // Charger les statistiques quotidiennes
-      const response = await supabase.functions.invoke('productivity-service', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ action: 'daily-stats' })
-      });
-
-      if (response.data) {
-        setStats(response.data.stats);
-      }
-
+      // Charger les statistiques des tâches
+      const taskStatsData = await taskService.getTaskStats();
+      setTaskStats(taskStatsData);
+      
+      // Charger les statistiques des objectifs
+      const goalStatsData = await goalService.getGoalStats();
+      setGoalStats(goalStatsData);
+      
       // Charger les tâches récentes
-      const tasksResponse = await supabase.functions.invoke('task-controller', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-
-      if (tasksResponse.data?.tasks) {
-        setRecentTasks(tasksResponse.data.tasks.slice(0, 5));
-      }
-
+      const tasks = await taskService.getTasks();
+      setRecentTasks(tasks.slice(0, 5));
+      
     } catch (error) {
-      console.error('Error loading dashboard:', error);
+      console.error('Error loading dashboard data:', error);
       toast({
         title: "Error",
         description: "Failed to load dashboard data",
@@ -75,12 +74,29 @@ export const Dashboard = () => {
     }
   };
 
+  const checkUser = async () => {
+    try {
+      console.log('Dashboard - Checking user...');
+      const { data: { user }, error } = await supabase.auth.getUser();
+      console.log('Dashboard - User check result:', user?.email, error);
+      setUser(user);
+    } catch (error) {
+      console.error('Dashboard - Error checking user:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
-    });
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const quickActions = [
@@ -118,92 +134,97 @@ export const Dashboard = () => {
     },
   ];
 
+  console.log('Dashboard - Rendering, loading:', loading, 'user:', user?.email);
+
   if (loading) {
+    console.log('Dashboard - Showing loading state');
     return (
       <div className="min-h-screen bg-background">
-        <Header user={user} onLogout={handleLogout} />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading Dashboard...</p>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
+  console.log('Dashboard - Rendering main content');
   return (
     <div className="min-h-screen bg-background">
-      <Header user={user} onLogout={handleLogout} />
+      <Header 
+        user={formatUserForHeader(user)} 
+        onLogout={handleLogout}
+        onNotificationsClick={() => toast({ title: "Notifications", description: "No new notifications" })}
+        onSettingsClick={() => toast({ title: "Settings", description: "Settings panel coming soon" })}
+      />
       
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">
+          <h1 className="text-3xl font-bold mb-2">
             Welcome back, {user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}!
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground">
             Here's what's happening with your tasks today.
           </p>
         </div>
 
+
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed Today</CardTitle>
-              <CheckSquare className="h-4 w-4 text-primary" />
+              <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
+              <CheckSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">
-                {stats?.completedToday || 0}
-              </div>
+              <div className="text-2xl font-bold">{taskStats.total}</div>
               <p className="text-xs text-muted-foreground">
-                {stats?.completionRate ? `${Math.round(stats.completionRate)}% completion rate` : 'Keep going!'}
+                {taskStats.total > 0 ? `${taskStats.completionRate}% completion rate` : 'No tasks yet'}
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-warning/10 to-warning/5 border-warning/20">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Tasks</CardTitle>
-              <Clock className="h-4 w-4 text-warning" />
+              <CardTitle className="text-sm font-medium">Completed</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-warning">
-                {stats?.pendingTasks || 0}
-              </div>
+              <div className="text-2xl font-bold">{taskStats.completed}</div>
               <p className="text-xs text-muted-foreground">
-                Tasks waiting for you
+                {taskStats.completionRate}% completion rate
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-success/10 to-success/5 border-success/20">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">This Week</CardTitle>
-              <TrendingUp className="h-4 w-4 text-success" />
+              <CardTitle className="text-sm font-medium">Pending</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-success">
-                {stats?.weeklyCompleted || 0}
-              </div>
+              <div className="text-2xl font-bold">{taskStats.pending}</div>
               <p className="text-xs text-muted-foreground">
-                Weekly progress
+                {taskStats.pending > 0 ? 'Tasks waiting for you' : 'No pending tasks'}
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/20">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Overdue</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-destructive" />
+              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-destructive">
-                {stats?.overdueTasks || 0}
-              </div>
+              <div className="text-2xl font-bold">{taskStats.overdue}</div>
               <p className="text-xs text-muted-foreground">
-                Need attention
+                {taskStats.overdue > 0 ? 'Need attention' : 'All tasks on time'}
               </p>
             </CardContent>
           </Card>
@@ -211,29 +232,31 @@ export const Dashboard = () => {
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <h2 className="text-2xl font-semibold mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {quickActions.map((action, index) => (
-              <Link key={index} to={action.href}>
-                <FeatureCard
-                  title={action.title}
-                  description={action.description}
-                  icon={action.icon}
-                  iconColor={action.iconColor}
-                  buttonText={action.buttonText}
-                  buttonVariant="outline"
-                />
-              </Link>
+          <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {quickActions.map((action) => (
+              <FeatureCard
+                key={action.title}
+                title={action.title}
+                description={action.description}
+                icon={action.icon}
+                iconColor={action.iconColor}
+                buttonText={action.buttonText}
+                href={action.href}
+              />
             ))}
           </div>
         </div>
 
-        {/* Recent Tasks */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Recent Activity */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">Recent Tasks</h2>
           <Card>
             <CardHeader>
               <CardTitle>Recent Tasks</CardTitle>
-              <CardDescription>Your latest task activity</CardDescription>
+              <CardDescription>
+                Your latest task activity
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {recentTasks.length > 0 ? (
@@ -256,8 +279,8 @@ export const Dashboard = () => {
                         )}
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm">
-                      View
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link to="/tasks">View</Link>
                     </Button>
                   </div>
                 ))
@@ -265,56 +288,9 @@ export const Dashboard = () => {
                 <div className="text-center py-8 text-muted-foreground">
                   <CheckSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No tasks yet. Create your first task to get started!</p>
-                  <Link to="/tasks/new" className="inline-block mt-4">
-                    <Button>Create Task</Button>
-                  </Link>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Priority Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Priority Distribution</CardTitle>
-              <CardDescription>Breakdown of your pending tasks</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {stats?.priorityDistribution ? (
-                <>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center">
-                      <div className="w-3 h-3 rounded-full bg-destructive mr-2"></div>
-                      High Priority
-                    </span>
-                    <span className="font-semibold">{stats.priorityDistribution.high}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center">
-                      <div className="w-3 h-3 rounded-full bg-warning mr-2"></div>
-                      Medium Priority
-                    </span>
-                    <span className="font-semibold">{stats.priorityDistribution.medium}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center">
-                      <div className="w-3 h-3 rounded-full bg-success mr-2"></div>
-                      Low Priority
-                    </span>
-                    <span className="font-semibold">{stats.priorityDistribution.low}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center">
-                      <div className="w-3 h-3 rounded-full bg-muted mr-2"></div>
-                      No Priority
-                    </span>
-                    <span className="font-semibold">{stats.priorityDistribution.none}</span>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No priority data available</p>
+                  <Button asChild className="mt-4">
+                    <Link to="/tasks">Create Task</Link>
+                  </Button>
                 </div>
               )}
             </CardContent>
