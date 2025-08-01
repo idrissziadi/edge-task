@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { 
   CheckSquare, 
   BarChart3, 
-  Settings, 
   User, 
   LogOut,
   Menu
@@ -20,17 +19,16 @@ import { useState } from "react";
 interface HeaderProps {
   user?: any;
   onLogout?: () => void;
+  showNavigation?: boolean;
 }
 
-export const Header = ({ user, onLogout }: HeaderProps) => {
+export const Header = ({ user, onLogout, showNavigation = true }: HeaderProps) => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
     { name: "Tasks", href: "/tasks", icon: CheckSquare },
-    { name: "Profile", href: "/profile", icon: User },
-    { name: "Admin", href: "/admin", icon: Settings },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -49,7 +47,8 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-8">
+        {showNavigation && user && (
+          <nav className="hidden md:flex items-center space-x-8">
           {navigation.map((item) => {
             const Icon = item.icon;
             return (
@@ -113,12 +112,6 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
           {/* Mobile Menu Button */}
           <Button
             variant="ghost"
-            size="sm"
-            className="md:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            <Menu className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 
@@ -126,7 +119,7 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
       {mobileMenuOpen && (
         <div className="md:hidden border-t bg-background">
           <nav className="container mx-auto px-4 py-4 space-y-2">
-            {navigation.map((item) => {
+      {mobileMenuOpen && showNavigation && user && (
               const Icon = item.icon;
               return (
                 <Link
@@ -138,13 +131,16 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
-                >
+          {showNavigation && user && (
+            <Button
                   <Icon className="h-4 w-4" />
                   <span className="font-medium">{item.name}</span>
                 </Link>
               );
             })}
           </nav>
+            </Button>
+          )}
         </div>
       )}
     </header>

@@ -9,6 +9,9 @@ import { Dashboard } from "./pages/Dashboard";
 import { TasksPage } from "./pages/TasksPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { AdminPage } from "./pages/AdminPage";
+import { AnalyticsPage } from "./pages/AnalyticsPage";
+import { GoalsPage } from "./pages/GoalsPage";
+import { CalendarPage } from "./pages/CalendarPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +27,9 @@ const App = () => (
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/goals" element={<GoalsPage />} />
+          <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<NotFound />} />

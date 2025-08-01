@@ -61,7 +61,7 @@ export const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <Header />
+      <Header showNavigation={false} />
       
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20">

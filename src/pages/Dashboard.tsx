@@ -90,7 +90,7 @@ export const Dashboard = () => {
       icon: Plus,
       iconColor: "blue" as const,
       buttonText: "Create",
-      href: "/tasks/new"
+      href: "/tasks"
     },
     {
       title: "View Analytics",
