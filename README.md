@@ -66,6 +66,13 @@ Une application moderne de gestion de tâches et d'objectifs construite avec Rea
 
 ## 📦 Installation
 
+### Option 1 : Installation Automatique (Recommandée)
+```bash
+# Exécuter le script d'installation complet
+./install-and-setup.sh
+```
+
+### Option 2 : Installation Manuelle
 1. **Cloner le projet**
 ```bash
 git clone <repository-url>
@@ -79,8 +86,17 @@ npm install
 
 3. **Configurer Supabase**
 ```bash
-# Exécuter le script de configuration de la base de données
-./setup-database.sh
+# Installer Supabase CLI
+npm install -g supabase
+
+# Se connecter à Supabase
+supabase login
+
+# Lier le projet
+supabase link --project-ref ccpkpjuiqhlqxgfszjnb
+
+# Configurer la base de données
+./fix-database.sh
 ```
 
 4. **Démarrer le serveur de développement**
@@ -116,12 +132,49 @@ npm run dev
 - `priority` (TEXT: 'low', 'medium', 'high')
 - `user_id` (UUID, Foreign Key)
 
+#### `calendar_events`
+- `id` (UUID, Primary Key)
+- `title` (TEXT, NOT NULL)
+- `description` (TEXT)
+- `start_time` (TIMESTAMP, NOT NULL)
+- `end_time` (TIMESTAMP, NOT NULL)
+- `all_day` (BOOLEAN)
+- `location` (TEXT)
+- `color` (TEXT)
+- `category_id` (UUID, Foreign Key)
+- `user_id` (UUID, Foreign Key)
+
+#### `categories`
+- `id` (UUID, Primary Key)
+- `name` (TEXT, NOT NULL)
+- `color` (TEXT)
+- `icon` (TEXT)
+- `user_id` (UUID, Foreign Key)
+
+#### `notifications`
+- `id` (UUID, Primary Key)
+- `user_id` (UUID, Foreign Key)
+- `title` (TEXT, NOT NULL)
+- `message` (TEXT)
+- `type` (TEXT: 'info', 'success', 'warning', 'error')
+- `is_read` (BOOLEAN)
+- `related_type` (TEXT)
+- `related_id` (UUID)
+
 #### `user_profiles`
 - `id` (UUID, Primary Key)
 - `auth_user_id` (UUID, Foreign Key)
 - `name` (TEXT)
 - `avatar_url` (TEXT)
 - `role` (TEXT, DEFAULT 'user')
+
+#### `user_settings`
+- `id` (UUID, Primary Key)
+- `user_id` (UUID, Foreign Key)
+- `theme` (TEXT, DEFAULT 'light')
+- `language` (TEXT, DEFAULT 'en')
+- `email_notifications` (BOOLEAN, DEFAULT TRUE)
+- `push_notifications` (BOOLEAN, DEFAULT TRUE)
 
 ## 🔐 Sécurité
 
@@ -149,6 +202,9 @@ npm run dev
 ### Services Dynamiques
 - **taskService**: Gestion complète des tâches
 - **goalService**: Gestion des objectifs
+- **categoryService**: Gestion des catégories
+- **calendarService**: Gestion des événements du calendrier
+- **notificationService**: Système de notifications
 - **Données en temps réel** avec Supabase
 - **Gestion d'erreurs** robuste
 

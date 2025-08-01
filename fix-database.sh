@@ -11,5 +11,8 @@ fi
 echo "🔄 Réinitialisation de la base de données..."
 supabase db reset --linked
 
+echo "📊 Application des nouvelles migrations..."
+supabase db push
+
 echo "✅ Base de données réparée!"
 echo "🎉 Vous pouvez maintenant créer des tâches et des objectifs." 

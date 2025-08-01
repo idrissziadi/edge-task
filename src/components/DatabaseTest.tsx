@@ -3,6 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { taskService } from '@/lib/taskService';
+import { goalService } from '@/lib/goalService';
+import { categoryService } from '@/lib/categoryService';
+import { calendarService } from '@/lib/calendarService';
+import { notificationService } from '@/lib/notificationService';
 import { useToast } from '@/hooks/use-toast';
 
 export const DatabaseTest: React.FC = () => {
@@ -54,7 +58,43 @@ export const DatabaseTest: React.FC = () => {
         addResult('✅ Goals table accessible');
       }
 
-      // Test 4: Créer une tâche de test
+      // Test 4: Vérifier l'accès à la table categories
+      const { data: categories, error: categoriesError } = await supabase
+        .from('categories')
+        .select('count')
+        .limit(1);
+
+      if (categoriesError) {
+        addResult(`❌ Categories table error: ${categoriesError.message}`);
+      } else {
+        addResult('✅ Categories table accessible');
+      }
+
+      // Test 5: Vérifier l'accès à la table calendar_events
+      const { data: events, error: eventsError } = await supabase
+        .from('calendar_events')
+        .select('count')
+        .limit(1);
+
+      if (eventsError) {
+        addResult(`❌ Calendar events table error: ${eventsError.message}`);
+      } else {
+        addResult('✅ Calendar events table accessible');
+      }
+
+      // Test 6: Vérifier l'accès à la table notifications
+      const { data: notifications, error: notificationsError } = await supabase
+        .from('notifications')
+        .select('count')
+        .limit(1);
+
+      if (notificationsError) {
+        addResult(`❌ Notifications table error: ${notificationsError.message}`);
+      } else {
+        addResult('✅ Notifications table accessible');
+      }
+
+      // Test 7: Créer une tâche de test
       addResult('Testing task creation...');
       const testTask = await taskService.createTask({
         title: 'Test Task',
@@ -76,6 +116,103 @@ export const DatabaseTest: React.FC = () => {
         }
       } else {
         addResult('❌ Failed to create test task');
+      }
+
+      // Test 8: Créer un objectif de test
+      addResult('Testing goal creation...');
+      const testGoal = await goalService.createGoal({
+        title: 'Test Goal',
+        description: 'This is a test goal',
+        category: 'Personal',
+        target_value: 100,
+        current_value: 0,
+        unit: 'points',
+        priority: 'medium',
+        is_completed: false
+      });
+
+      if (testGoal) {
+        addResult('✅ Test goal created successfully');
+        
+        // Supprimer l'objectif de test
+        const deleted = await goalService.deleteGoal(testGoal.id);
+        if (deleted) {
+          addResult('✅ Test goal deleted successfully');
+        } else {
+          addResult('❌ Failed to delete test goal');
+        }
+      } else {
+        addResult('❌ Failed to create test goal');
+      }
+
+      // Test 9: Créer une catégorie de test
+      addResult('Testing category creation...');
+      const testCategory = await categoryService.createCategory({
+        name: 'Test Category',
+        color: '#3B82F6',
+        icon: 'test'
+      });
+
+      if (testCategory) {
+        addResult('✅ Test category created successfully');
+        
+        // Supprimer la catégorie de test
+        const deleted = await categoryService.deleteCategory(testCategory.id);
+        if (deleted) {
+          addResult('✅ Test category deleted successfully');
+        } else {
+          addResult('❌ Failed to delete test category');
+        }
+      } else {
+        addResult('❌ Failed to create test category');
+      }
+
+      // Test 10: Créer un événement de test
+      addResult('Testing calendar event creation...');
+      const testEvent = await calendarService.createEvent({
+        title: 'Test Event',
+        description: 'This is a test event',
+        start_time: new Date().toISOString(),
+        end_time: new Date(Date.now() + 3600000).toISOString(), // 1 hour later
+        all_day: false,
+        color: '#3B82F6'
+      });
+
+      if (testEvent) {
+        addResult('✅ Test event created successfully');
+        
+        // Supprimer l'événement de test
+        const deleted = await calendarService.deleteEvent(testEvent.id);
+        if (deleted) {
+          addResult('✅ Test event deleted successfully');
+        } else {
+          addResult('❌ Failed to delete test event');
+        }
+      } else {
+        addResult('❌ Failed to create test event');
+      }
+
+      // Test 11: Créer une notification de test
+      addResult('Testing notification creation...');
+      const testNotification = await notificationService.createNotification({
+        title: 'Test Notification',
+        message: 'This is a test notification',
+        type: 'info',
+        is_read: false
+      });
+
+      if (testNotification) {
+        addResult('✅ Test notification created successfully');
+        
+        // Supprimer la notification de test
+        const deleted = await notificationService.deleteNotification(testNotification.id);
+        if (deleted) {
+          addResult('✅ Test notification deleted successfully');
+        } else {
+          addResult('❌ Failed to delete test notification');
+        }
+      } else {
+        addResult('❌ Failed to create test notification');
       }
 
     } catch (error) {
