@@ -29,7 +29,8 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
     { name: "Tasks", href: "/tasks", icon: CheckSquare },
-    { name: "Analytics", href: "/analytics", icon: BarChart3 },
+    { name: "Profile", href: "/profile", icon: User },
+    { name: "Admin", href: "/admin", icon: Settings },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -80,12 +81,16 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  Profile
+                  <Link to="/profile" className="flex items-center w-full">
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
+                  <Link to="/admin" className="flex items-center w-full">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Admin
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onLogout}>
