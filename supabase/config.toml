@@ -1,1 +1,19 @@
 project_id = "ccpkpjuiqhlqxgfszjnb"
+
+[functions.task-controller]
+verify_jwt = false
+
+[functions.auth-controller]
+verify_jwt = false
+
+[functions.productivity-service]
+verify_jwt = false
+
+[functions.admin-controller]
+verify_jwt = false
+
+[functions.notification-service]
+verify_jwt = false
+
+[functions.recurring-task-service]
+verify_jwt = false
