@@ -29,21 +29,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatUserForHeader } from "@/lib/utils";
-
-interface Goal {
-  id: string;
-  title: string;
-  description?: string;
-  category: string;
-  priority: 'low' | 'medium' | 'high';
-  target_value: number;
-  current_value: number;
-  unit: string;
-  deadline?: string;
-  is_completed: boolean;
-  created_at: string;
-  milestones: Milestone[];
-}
+import { goalService, Goal as GoalType } from "@/lib/goalService";
 
 interface Milestone {
   id: string;
@@ -54,10 +40,10 @@ interface Milestone {
 }
 
 export const GoalsPage = () => {
-  const [goals, setGoals] = useState<Goal[]>([]);
+  const [goals, setGoals] = useState<GoalType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  const [editingGoal, setEditingGoal] = useState<GoalType | null>(null);
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [user, setUser] = useState<any>(null);
@@ -97,71 +83,8 @@ export const GoalsPage = () => {
   const loadGoals = async () => {
     try {
       setLoading(true);
-      
-      // Simulate loading goals data
-      const mockGoals: Goal[] = [
-        {
-          id: "1",
-          title: "Complete 100 Tasks",
-          description: "Complete 100 tasks to improve productivity",
-          category: "work",
-          priority: "high",
-          target_value: 100,
-          current_value: 75,
-          unit: "tasks",
-          deadline: "2024-12-31",
-          is_completed: false,
-          created_at: "2024-01-01",
-          milestones: [
-            { id: "1", title: "Complete 25 tasks", target_value: 25, is_completed: true, completed_at: "2024-02-15" },
-            { id: "2", title: "Complete 50 tasks", target_value: 50, is_completed: true, completed_at: "2024-04-10" },
-            { id: "3", title: "Complete 75 tasks", target_value: 75, is_completed: true, completed_at: "2024-06-20" },
-            { id: "4", title: "Complete 100 tasks", target_value: 100, is_completed: false }
-          ]
-        },
-        {
-          id: "2",
-          title: "Learn 5 New Skills",
-          description: "Acquire 5 new professional skills this year",
-          category: "learning",
-          priority: "medium",
-          target_value: 5,
-          current_value: 2,
-          unit: "skills",
-          deadline: "2024-12-31",
-          is_completed: false,
-          created_at: "2024-01-15",
-          milestones: [
-            { id: "5", title: "Learn React", target_value: 1, is_completed: true, completed_at: "2024-03-01" },
-            { id: "6", title: "Learn TypeScript", target_value: 2, is_completed: true, completed_at: "2024-05-15" },
-            { id: "7", title: "Learn Node.js", target_value: 3, is_completed: false },
-            { id: "8", title: "Learn Python", target_value: 4, is_completed: false },
-            { id: "9", title: "Learn Docker", target_value: 5, is_completed: false }
-          ]
-        },
-        {
-          id: "3",
-          title: "Exercise 150 Days",
-          description: "Exercise at least 30 minutes for 150 days",
-          category: "health",
-          priority: "high",
-          target_value: 150,
-          current_value: 89,
-          unit: "days",
-          deadline: "2024-12-31",
-          is_completed: false,
-          created_at: "2024-01-01",
-          milestones: [
-            { id: "10", title: "Exercise 30 days", target_value: 30, is_completed: true, completed_at: "2024-02-01" },
-            { id: "11", title: "Exercise 60 days", target_value: 60, is_completed: true, completed_at: "2024-03-15" },
-            { id: "12", title: "Exercise 90 days", target_value: 90, is_completed: false },
-            { id: "13", title: "Exercise 120 days", target_value: 120, is_completed: false },
-            { id: "14", title: "Exercise 150 days", target_value: 150, is_completed: false }
-          ]
-        }
-      ];
-
-      setGoals(mockGoals);
+      const goals = await goalService.getGoals();
+      setGoals(goals);
     } catch (error) {
       console.error('Error loading goals:', error);
       toast({
@@ -176,38 +99,38 @@ export const GoalsPage = () => {
 
   const createGoal = async () => {
     try {
-      const goalData = {
-        ...newGoal,
-        id: Date.now().toString(),
+      const goal = await goalService.createGoal({
+        title: newGoal.title,
+        description: newGoal.description,
+        category: newGoal.category,
+        priority: newGoal.priority as 'low' | 'medium' | 'high',
+        target_value: newGoal.target_value,
         current_value: 0,
-        is_completed: false,
-        created_at: new Date().toISOString(),
-        milestones: newGoal.milestones.map((m, index) => ({
-          id: `${Date.now()}-${index}`,
-          title: m.title,
-          target_value: m.target_value,
-          is_completed: false
-        }))
-      };
-
-      setGoals(prev => [goalData as Goal, ...prev]);
-      setIsCreateDialogOpen(false);
-      setNewGoal({
-        title: "",
-        description: "",
-        category: "personal",
-        priority: "medium",
-        target_value: 0,
-        current_value: 0,
-        unit: "tasks",
-        deadline: "",
-        milestones: []
+        unit: newGoal.unit,
+        deadline: newGoal.deadline || undefined,
+        is_completed: false
       });
 
-      toast({
-        title: "Success",
-        description: "Goal created successfully"
-      });
+      if (goal) {
+        setGoals(prev => [goal, ...prev]);
+        setIsCreateDialogOpen(false);
+        setNewGoal({
+          title: "",
+          description: "",
+          category: "personal",
+          priority: "medium",
+          target_value: 0,
+          current_value: 0,
+          unit: "tasks",
+          deadline: "",
+          milestones: []
+        });
+
+        toast({
+          title: "Success",
+          description: "Goal created successfully"
+        });
+      }
     } catch (error) {
       console.error('Error creating goal:', error);
       toast({
@@ -218,40 +141,51 @@ export const GoalsPage = () => {
     }
   };
 
-  const updateGoalProgress = (goalId: string, newValue: number) => {
-    setGoals(prev => prev.map(goal => {
-      if (goal.id === goalId) {
-        const updatedGoal = { ...goal, current_value: newValue };
-        
-        // Update milestone completion
-        updatedGoal.milestones = goal.milestones.map(milestone => ({
-          ...milestone,
-          is_completed: newValue >= milestone.target_value,
-          completed_at: newValue >= milestone.target_value && !milestone.is_completed 
-            ? new Date().toISOString() 
-            : milestone.completed_at
-        }));
+  const updateGoalProgress = async (goalId: string, newValue: number) => {
+    try {
+      const success = await goalService.updateProgress(goalId, newValue);
+      
+      if (success) {
+        setGoals(prev => prev.map(goal => 
+          goal.id === goalId 
+            ? { ...goal, current_value: newValue, is_completed: newValue >= goal.target_value }
+            : goal
+        ));
 
-        // Check if goal is completed
-        updatedGoal.is_completed = newValue >= goal.target_value;
-
-        return updatedGoal;
+        toast({
+          title: "Success",
+          description: "Goal progress updated"
+        });
       }
-      return goal;
-    }));
-
-    toast({
-      title: "Success",
-      description: "Goal progress updated"
-    });
+    } catch (error) {
+      console.error('Error updating goal progress:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update goal progress",
+        variant: "destructive"
+      });
+    }
   };
 
-  const deleteGoal = (goalId: string) => {
-    setGoals(prev => prev.filter(goal => goal.id !== goalId));
-    toast({
-      title: "Success",
-      description: "Goal deleted successfully"
-    });
+  const deleteGoal = async (goalId: string) => {
+    try {
+      const success = await goalService.deleteGoal(goalId);
+      
+      if (success) {
+        setGoals(prev => prev.filter(goal => goal.id !== goalId));
+        toast({
+          title: "Success",
+          description: "Goal deleted successfully"
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting goal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete goal",
+        variant: "destructive"
+      });
+    }
   };
 
   const addMilestone = () => {

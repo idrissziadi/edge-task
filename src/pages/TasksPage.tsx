@@ -16,15 +16,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatUserForHeader } from "@/lib/utils";
 import { taskService, Task } from "@/lib/taskService";
+import { categoryService, Category } from "@/lib/categoryService";
 
 
 
 export const TasksPage = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPriority, setFilterPriority] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("all");
   const [sortBy, setSortBy] = useState("created_at");
   const [sortOrder, setSortOrder] = useState("desc");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -38,6 +41,7 @@ export const TasksPage = () => {
     description: "",
     priority: "medium",
     deadline: "",
+    category_id: "",
     is_recurring: false,
     recurrence_rule: ""
   });
@@ -45,6 +49,7 @@ export const TasksPage = () => {
   useEffect(() => {
     checkUser();
     fetchTasks();
+    fetchCategories();
   }, []);
 
   const checkUser = async () => {
@@ -68,6 +73,15 @@ export const TasksPage = () => {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const categories = await categoryService.getCategories();
+      setCategories(categories);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
   const createTask = async () => {
     try {
       const task = await taskService.createTask({
@@ -75,6 +89,7 @@ export const TasksPage = () => {
         description: newTask.description,
         priority: newTask.priority as 'low' | 'medium' | 'high',
         deadline: newTask.deadline || undefined,
+        category_id: newTask.category_id || undefined,
         is_completed: false,
         is_recurring: newTask.is_recurring,
         recurrence_rule: newTask.recurrence_rule
@@ -88,6 +103,7 @@ export const TasksPage = () => {
           description: "",
           priority: "medium",
           deadline: "",
+          category_id: "",
           is_recurring: false,
           recurrence_rule: ""
         });
@@ -203,11 +219,12 @@ export const TasksPage = () => {
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPriority = filterPriority === "all" || task.priority === filterPriority;
+    const matchesCategory = filterCategory === "all" || task.category_id === filterCategory;
     const matchesStatus = filterStatus === "all" || 
       (filterStatus === "completed" && task.is_completed) ||
       (filterStatus === "pending" && !task.is_completed) ||
       (filterStatus === "overdue" && !task.is_completed && task.deadline && new Date(task.deadline) < new Date());
-    return matchesSearch && matchesPriority && matchesStatus;
+    return matchesSearch && matchesPriority && matchesCategory && matchesStatus;
   });
 
   const sortedTasks = [...filteredTasks].sort((a, b) => {
@@ -291,19 +308,34 @@ export const TasksPage = () => {
                     placeholder="Enter task description"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="priority">Priority</Label>
-                  <Select value={newTask.priority} onValueChange={(value) => setNewTask(prev => ({ ...prev, priority: value }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  <div>
+                    <Label htmlFor="priority">Priority</Label>
+                    <Select value={newTask.priority} onValueChange={(value) => setNewTask(prev => ({ ...prev, priority: value }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="category">Category</Label>
+                    <Select value={newTask.category_id} onValueChange={(value) => setNewTask(prev => ({ ...prev, category_id: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map(category => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 <div>
                   <Label htmlFor="deadline">Deadline</Label>
                   <Input
@@ -435,6 +467,19 @@ export const TasksPage = () => {
               <SelectItem value="high">High</SelectItem>
               <SelectItem value="medium">Medium</SelectItem>
               <SelectItem value="low">Low</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filterCategory} onValueChange={setFilterCategory}>
+            <SelectTrigger className="w-full lg:w-48">
+              <SelectValue placeholder="Filter by category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.map(category => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {

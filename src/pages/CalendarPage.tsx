@@ -28,38 +28,18 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatUserForHeader } from "@/lib/utils";
+import { calendarService, CalendarEvent as CalendarEventType } from "@/lib/calendarService";
+import { taskService, Task } from "@/lib/taskService";
 
-interface CalendarEvent {
-  id: string;
-  title: string;
-  description?: string;
-  start_date: string;
-  end_date: string;
-  all_day: boolean;
-  location?: string;
-  attendees?: string[];
-  priority: 'low' | 'medium' | 'high';
-  category: string;
-  reminder_minutes?: number;
-  created_at: string;
-}
-
-interface Task {
-  id: string;
-  title: string;
-  deadline?: string;
-  priority: 'low' | 'medium' | 'high';
-  is_completed: boolean;
-}
 
 export const CalendarPage = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<'month' | 'week' | 'day'>('month');
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [events, setEvents] = useState<CalendarEventType[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEventType | null>(null);
   const [filterCategory, setFilterCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [user, setUser] = useState<any>(null);
@@ -68,14 +48,11 @@ export const CalendarPage = () => {
   const [newEvent, setNewEvent] = useState({
     title: "",
     description: "",
-    start_date: "",
-    end_date: "",
+    start_time: "",
+    end_time: "",
     all_day: false,
     location: "",
-    attendees: [] as string[],
-    priority: "medium",
-    category: "personal",
-    reminder_minutes: 15
+    color: "#3B82F6"
   });
 
   const categories = [
@@ -101,59 +78,14 @@ export const CalendarPage = () => {
     try {
       setLoading(true);
       
+      // Load calendar events
+      const events = await calendarService.getEvents();
+      setEvents(events);
+
       // Load tasks with deadlines
-      const { data: tasksData } = await supabase.functions.invoke('task-controller', {
-        method: 'GET'
-      });
+      const tasks = await taskService.getTasks();
+      setTasks(tasks.filter(task => task.deadline));
 
-      if (tasksData?.tasks) {
-        setTasks(tasksData.tasks.filter((task: Task) => task.deadline));
-      }
-
-      // Mock calendar events
-      const mockEvents: CalendarEvent[] = [
-        {
-          id: "1",
-          title: "Team Meeting",
-          description: "Weekly team sync meeting",
-          start_date: "2024-01-15T10:00:00",
-          end_date: "2024-01-15T11:00:00",
-          all_day: false,
-          location: "Conference Room A",
-          attendees: ["john@example.com", "jane@example.com"],
-          priority: "high",
-          category: "meeting",
-          reminder_minutes: 15,
-          created_at: "2024-01-01T00:00:00"
-        },
-        {
-          id: "2",
-          title: "Project Deadline",
-          description: "Submit final project deliverables",
-          start_date: "2024-01-20T23:59:00",
-          end_date: "2024-01-20T23:59:00",
-          all_day: true,
-          priority: "high",
-          category: "deadline",
-          reminder_minutes: 60,
-          created_at: "2024-01-01T00:00:00"
-        },
-        {
-          id: "3",
-          title: "Doctor Appointment",
-          description: "Annual checkup",
-          start_date: "2024-01-18T14:30:00",
-          end_date: "2024-01-18T15:30:00",
-          all_day: false,
-          location: "Medical Center",
-          priority: "medium",
-          category: "appointment",
-          reminder_minutes: 30,
-          created_at: "2024-01-01T00:00:00"
-        }
-      ];
-
-      setEvents(mockEvents);
     } catch (error) {
       console.error('Error loading calendar data:', error);
       toast({
@@ -168,31 +100,34 @@ export const CalendarPage = () => {
 
   const createEvent = async () => {
     try {
-      const eventData = {
-        ...newEvent,
-        id: Date.now().toString(),
-        created_at: new Date().toISOString()
-      };
-
-      setEvents(prev => [...prev, eventData as CalendarEvent]);
-      setIsCreateEventOpen(false);
-      setNewEvent({
-        title: "",
-        description: "",
-        start_date: "",
-        end_date: "",
-        all_day: false,
-        location: "",
-        attendees: [],
-        priority: "medium",
-        category: "personal",
-        reminder_minutes: 15
+      const event = await calendarService.createEvent({
+        title: newEvent.title,
+        description: newEvent.description,
+        start_time: newEvent.start_time,
+        end_time: newEvent.end_time,
+        all_day: newEvent.all_day,
+        location: newEvent.location,
+        color: newEvent.color
       });
 
-      toast({
-        title: "Success",
-        description: "Event created successfully"
-      });
+      if (event) {
+        setEvents(prev => [...prev, event]);
+        setIsCreateEventOpen(false);
+        setNewEvent({
+          title: "",
+          description: "",
+          start_time: "",
+          end_time: "",
+          all_day: false,
+          location: "",
+          color: "#3B82F6"
+        });
+
+        toast({
+          title: "Success",
+          description: "Event created successfully"
+        });
+      }
     } catch (error) {
       console.error('Error creating event:', error);
       toast({
@@ -203,13 +138,26 @@ export const CalendarPage = () => {
     }
   };
 
-  const deleteEvent = (eventId: string) => {
-    setEvents(prev => prev.filter(event => event.id !== eventId));
-    setSelectedEvent(null);
-    toast({
-      title: "Success",
-      description: "Event deleted successfully"
-    });
+  const deleteEvent = async (eventId: string) => {
+    try {
+      const success = await calendarService.deleteEvent(eventId);
+      
+      if (success) {
+        setEvents(prev => prev.filter(event => event.id !== eventId));
+        setSelectedEvent(null);
+        toast({
+          title: "Success",
+          description: "Event deleted successfully"
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete event",
+        variant: "destructive"
+      });
+    }
   };
 
   const getDaysInMonth = (date: Date) => {
@@ -237,7 +185,7 @@ export const CalendarPage = () => {
 
   const getEventsForDate = (date: Date) => {
     return events.filter(event => {
-      const eventDate = new Date(event.start_date);
+      const eventDate = new Date(event.start_time);
       return eventDate.toDateString() === date.toDateString();
     });
   };
@@ -428,21 +376,21 @@ export const CalendarPage = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="start-date">Start Date & Time</Label>
+                      <Label htmlFor="start-time">Start Date & Time</Label>
                       <Input
-                        id="start-date"
+                        id="start-time"
                         type="datetime-local"
-                        value={newEvent.start_date}
-                        onChange={(e) => setNewEvent(prev => ({ ...prev, start_date: e.target.value }))}
+                        value={newEvent.start_time}
+                        onChange={(e) => setNewEvent(prev => ({ ...prev, start_time: e.target.value }))}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="end-date">End Date & Time</Label>
+                      <Label htmlFor="end-time">End Date & Time</Label>
                       <Input
-                        id="end-date"
+                        id="end-time"
                         type="datetime-local"
-                        value={newEvent.end_date}
-                        onChange={(e) => setNewEvent(prev => ({ ...prev, end_date: e.target.value }))}
+                        value={newEvent.end_time}
+                        onChange={(e) => setNewEvent(prev => ({ ...prev, end_time: e.target.value }))}
                       />
                     </div>
                   </div>
@@ -464,52 +412,14 @@ export const CalendarPage = () => {
                       placeholder="Event location"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="category">Category</Label>
-                      <Select value={newEvent.category} onValueChange={(value) => setNewEvent(prev => ({ ...prev, category: value }))}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map(cat => (
-                            <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="priority">Priority</Label>
-                      <Select value={newEvent.priority} onValueChange={(value) => setNewEvent(prev => ({ ...prev, priority: value }))}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
                   <div>
-                    <Label htmlFor="reminder">Reminder (minutes before)</Label>
-                    <Select 
-                      value={newEvent.reminder_minutes?.toString()} 
-                      onValueChange={(value) => setNewEvent(prev => ({ ...prev, reminder_minutes: parseInt(value) }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="0">No reminder</SelectItem>
-                        <SelectItem value="5">5 minutes</SelectItem>
-                        <SelectItem value="15">15 minutes</SelectItem>
-                        <SelectItem value="30">30 minutes</SelectItem>
-                        <SelectItem value="60">1 hour</SelectItem>
-                        <SelectItem value="1440">1 day</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="color">Color</Label>
+                    <Input
+                      id="color"
+                      type="color"
+                      value={newEvent.color}
+                      onChange={(e) => setNewEvent(prev => ({ ...prev, color: e.target.value }))}
+                    />
                   </div>
                   <Button onClick={createEvent} className="w-full bg-gradient-primary">
                     Create Event
@@ -592,13 +502,13 @@ export const CalendarPage = () => {
                             </div>
                             <div className="space-y-1">
                               {getEventsForDate(day).slice(0, 2).map(event => (
-                                <div
-                                  key={event.id}
-                                  className={`text-xs p-1 rounded truncate cursor-pointer ${getCategoryColor(event.category)} text-white`}
-                                  onClick={() => setSelectedEvent(event)}
-                                >
-                                  {event.title}
-                                </div>
+                                 <div
+                                   key={event.id}
+                                   className="text-xs p-1 rounded truncate cursor-pointer bg-blue-500 text-white"
+                                   onClick={() => setSelectedEvent(event)}
+                                 >
+                                   {event.title}
+                                 </div>
                               ))}
                               {getTasksForDate(day).slice(0, 1).map(task => (
                                 <div
@@ -649,20 +559,20 @@ export const CalendarPage = () => {
                         </div>
                         {getWeekDays(currentDate).map(day => (
                           <div key={`${day.toISOString()}-${hour}`} className="min-h-12 p-1 border-r">
-                            {getEventsForDate(day)
-                              .filter(event => {
-                                const eventHour = new Date(event.start_date).getHours();
-                                return eventHour === hour;
-                              })
-                              .map(event => (
-                                <div
-                                  key={event.id}
-                                  className={`text-xs p-1 rounded mb-1 cursor-pointer ${getCategoryColor(event.category)} text-white`}
-                                  onClick={() => setSelectedEvent(event)}
-                                >
-                                  {event.title}
-                                </div>
-                              ))}
+                           {getEventsForDate(day)
+                             .filter(event => {
+                               const eventHour = new Date(event.start_time).getHours();
+                               return eventHour === hour;
+                             })
+                             .map(event => (
+                               <div
+                                 key={event.id}
+                                 className="text-xs p-1 rounded mb-1 cursor-pointer bg-blue-500 text-white"
+                                 onClick={() => setSelectedEvent(event)}
+                               >
+                                 {event.title}
+                               </div>
+                             ))}
                           </div>
                         ))}
                       </div>
@@ -692,35 +602,35 @@ export const CalendarPage = () => {
                           {hour.toString().padStart(2, '0')}:00
                         </div>
                         <div className="flex-1">
-                          {getEventsForDate(currentDate)
-                            .filter(event => {
-                              const eventHour = new Date(event.start_date).getHours();
-                              return eventHour === hour;
-                            })
-                            .map(event => (
-                              <div
-                                key={event.id}
-                                className={`p-2 rounded mb-2 cursor-pointer border-l-4 ${getPriorityColor(event.priority)} bg-muted/50`}
-                                onClick={() => setSelectedEvent(event)}
-                              >
-                                <div className="font-medium">{event.title}</div>
-                                {event.location && (
-                                  <div className="text-sm text-muted-foreground flex items-center gap-1">
-                                    <MapPin className="h-3 w-3" />
-                                    {event.location}
-                                  </div>
-                                )}
-                                <div className="text-sm text-muted-foreground">
-                                  {new Date(event.start_date).toLocaleTimeString('en-US', { 
-                                    hour: 'numeric', 
-                                    minute: '2-digit' 
-                                  })} - {new Date(event.end_date).toLocaleTimeString('en-US', { 
-                                    hour: 'numeric', 
-                                    minute: '2-digit' 
-                                  })}
-                                </div>
-                              </div>
-                            ))}
+                           {getEventsForDate(currentDate)
+                             .filter(event => {
+                               const eventHour = new Date(event.start_time).getHours();
+                               return eventHour === hour;
+                             })
+                             .map(event => (
+                               <div
+                                 key={event.id}
+                                 className="p-2 rounded mb-2 cursor-pointer border-l-4 border-l-blue-500 bg-muted/50"
+                                 onClick={() => setSelectedEvent(event)}
+                               >
+                                 <div className="font-medium">{event.title}</div>
+                                 {event.location && (
+                                   <div className="text-sm text-muted-foreground flex items-center gap-1">
+                                     <MapPin className="h-3 w-3" />
+                                     {event.location}
+                                   </div>
+                                 )}
+                                 <div className="text-sm text-muted-foreground">
+                                   {new Date(event.start_time).toLocaleTimeString('en-US', { 
+                                     hour: 'numeric', 
+                                     minute: '2-digit' 
+                                   })} - {new Date(event.end_time).toLocaleTimeString('en-US', { 
+                                     hour: 'numeric', 
+                                     minute: '2-digit' 
+                                   })}
+                                 </div>
+                               </div>
+                             ))}
                           {getTasksForDate(currentDate).map(task => (
                             <div
                               key={task.id}
@@ -754,32 +664,32 @@ export const CalendarPage = () => {
                 <CardTitle className="text-lg">Upcoming Events</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {events
-                    .filter(event => new Date(event.start_date) >= new Date())
-                    .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
-                    .slice(0, 5)
-                    .map(event => (
-                      <div
-                        key={event.id}
-                        className="p-3 rounded border cursor-pointer hover:bg-muted/50"
-                        onClick={() => setSelectedEvent(event)}
-                      >
-                        <div className="font-medium text-sm">{event.title}</div>
-                        <div className="text-xs text-muted-foreground flex items-center gap-1">
-                          <CalendarIcon className="h-3 w-3" />
-                          {new Date(event.start_date).toLocaleDateString()}
-                        </div>
-                        <div className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {new Date(event.start_date).toLocaleTimeString('en-US', { 
-                            hour: 'numeric', 
-                            minute: '2-digit' 
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                </div>
+                 <div className="space-y-3">
+                   {events
+                     .filter(event => new Date(event.start_time) >= new Date())
+                     .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+                     .slice(0, 5)
+                     .map(event => (
+                       <div
+                         key={event.id}
+                         className="p-3 rounded border cursor-pointer hover:bg-muted/50"
+                         onClick={() => setSelectedEvent(event)}
+                       >
+                         <div className="font-medium text-sm">{event.title}</div>
+                         <div className="text-xs text-muted-foreground flex items-center gap-1">
+                           <CalendarIcon className="h-3 w-3" />
+                           {new Date(event.start_time).toLocaleDateString()}
+                         </div>
+                         <div className="text-xs text-muted-foreground flex items-center gap-1">
+                           <Clock className="h-3 w-3" />
+                           {new Date(event.start_time).toLocaleTimeString('en-US', { 
+                             hour: 'numeric', 
+                             minute: '2-digit' 
+                           })}
+                         </div>
+                       </div>
+                     ))}
+                 </div>
               </CardContent>
             </Card>
 
@@ -834,16 +744,16 @@ export const CalendarPage = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">This Week</span>
-                    <span className="font-medium">
-                      {events.filter(event => {
-                        const eventDate = new Date(event.start_date);
-                        const weekStart = new Date();
-                        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-                        const weekEnd = new Date(weekStart);
-                        weekEnd.setDate(weekStart.getDate() + 6);
-                        return eventDate >= weekStart && eventDate <= weekEnd;
-                      }).length}
-                    </span>
+                     <span className="font-medium">
+                       {events.filter(event => {
+                         const eventDate = new Date(event.start_time);
+                         const weekStart = new Date();
+                         weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                         const weekEnd = new Date(weekStart);
+                         weekEnd.setDate(weekStart.getDate() + 6);
+                         return eventDate >= weekStart && eventDate <= weekEnd;
+                       }).length}
+                     </span>
                   </div>
                 </div>
               </CardContent>
@@ -866,18 +776,18 @@ export const CalendarPage = () => {
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Start</Label>
-                    <p className="text-sm">
-                      {new Date(selectedEvent.start_date).toLocaleString()}
-                    </p>
-                  </div>
-                  <div>
-                    <Label>End</Label>
-                    <p className="text-sm">
-                      {new Date(selectedEvent.end_date).toLocaleString()}
-                    </p>
-                  </div>
+                   <div>
+                     <Label>Start</Label>
+                     <p className="text-sm">
+                       {new Date(selectedEvent.start_time).toLocaleString()}
+                     </p>
+                   </div>
+                   <div>
+                     <Label>End</Label>
+                     <p className="text-sm">
+                       {new Date(selectedEvent.end_time).toLocaleString()}
+                     </p>
+                   </div>
                 </div>
                 {selectedEvent.location && (
                   <div>
@@ -888,23 +798,11 @@ export const CalendarPage = () => {
                     </p>
                   </div>
                 )}
-                <div className="flex gap-2">
-                  <Badge className={`${getCategoryColor(selectedEvent.category)} text-white`}>
-                    {categories.find(c => c.value === selectedEvent.category)?.label}
-                  </Badge>
-                  <Badge className={`${selectedEvent.priority === 'high' ? 'bg-red-500' : selectedEvent.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'} text-white`}>
-                    {selectedEvent.priority}
-                  </Badge>
-                </div>
-                {selectedEvent.reminder_minutes && selectedEvent.reminder_minutes > 0 && (
-                  <div>
-                    <Label>Reminder</Label>
-                    <p className="text-sm flex items-center gap-1">
-                      <Bell className="h-4 w-4" />
-                      {selectedEvent.reminder_minutes} minutes before
-                    </p>
-                  </div>
-                )}
+                 <div className="flex gap-2">
+                   <Badge className="bg-blue-500 text-white">
+                     Event
+                   </Badge>
+                 </div>
                 <div className="flex gap-2 pt-4">
                   <Button variant="outline" className="flex-1">
                     <Edit className="h-4 w-4 mr-2" />

@@ -8,18 +8,11 @@ export interface CalendarEvent {
   end_time: string;
   all_day: boolean;
   location?: string;
-  color: string;
+  color?: string;
   category_id?: string;
   user_id: string;
   created_at: string;
   updated_at: string;
-}
-
-export interface CalendarEventStats {
-  total: number;
-  upcoming: number;
-  past: number;
-  today: number;
 }
 
 export const calendarService = {
@@ -29,38 +22,25 @@ export const calendarService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      // Get user's internal ID first
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (userError) throw userError;
+
       const { data, error } = await supabase
         .from('calendar_events')
         .select('*')
-        .eq('user_id', user.id)
-        .order('start_time');
+        .eq('user_id', userData.id)
+        .order('start_time', { ascending: true });
 
       if (error) throw error;
       return data || [];
     } catch (error) {
       console.error('Error fetching events:', error);
-      return [];
-    }
-  },
-
-  // Récupérer les événements pour une période donnée
-  async getEventsByDateRange(startDate: string, endDate: string): Promise<CalendarEvent[]> {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
-        .from('calendar_events')
-        .select('*')
-        .eq('user_id', user.id)
-        .gte('start_time', startDate)
-        .lte('end_time', endDate)
-        .order('start_time');
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching events by date range:', error);
       return [];
     }
   },
@@ -71,11 +51,20 @@ export const calendarService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      // Get user's internal ID first
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (userError) throw userError;
+
       const { data, error } = await supabase
         .from('calendar_events')
         .insert([{
           ...event,
-          user_id: user.id,
+          user_id: userData.id,
         }])
         .select()
         .single();
@@ -122,35 +111,34 @@ export const calendarService = {
     }
   },
 
-  // Récupérer les statistiques des événements
-  async getEventStats(): Promise<CalendarEventStats> {
+  // Récupérer les événements pour une période donnée
+  async getEventsForPeriod(startDate: string, endDate: string): Promise<CalendarEvent[]> {
     try {
-      const events = await this.getEvents();
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
 
-      const total = events.length;
-      const upcoming = events.filter(event => new Date(event.start_time) > now).length;
-      const past = events.filter(event => new Date(event.end_time) < now).length;
-      const todayEvents = events.filter(event => {
-        const eventDate = new Date(event.start_time);
-        return eventDate >= today && eventDate < new Date(today.getTime() + 24 * 60 * 60 * 1000);
-      }).length;
+      // Get user's internal ID first
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
 
-      return {
-        total,
-        upcoming,
-        past,
-        today: todayEvents
-      };
+      if (userError) throw userError;
+
+      const { data, error } = await supabase
+        .from('calendar_events')
+        .select('*')
+        .eq('user_id', userData.id)
+        .gte('start_time', startDate)
+        .lte('end_time', endDate)
+        .order('start_time');
+
+      if (error) throw error;
+      return data || [];
     } catch (error) {
-      console.error('Error getting event stats:', error);
-      return {
-        total: 0,
-        upcoming: 0,
-        past: 0,
-        today: 0
-      };
+      console.error('Error fetching events for period:', error);
+      return [];
     }
   }
-}; 
+};
