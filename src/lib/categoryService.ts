@@ -5,6 +5,7 @@ export interface Category {
   name: string;
   description?: string;
   color: string;
+  icon?: string;
   user_id: string;
   created_at: string;
   updated_at: string;
@@ -17,19 +18,10 @@ export const categoryService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Get user's internal ID first
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
-
-      if (userError) throw userError;
-
       const { data, error } = await supabase
         .from('categories')
         .select('*')
-        .eq('user_id', userData.id)
+        .eq('user_id', user.id)
         .order('name');
 
       if (error) throw error;
@@ -46,20 +38,11 @@ export const categoryService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Get user's internal ID first
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
-
-      if (userError) throw userError;
-
       const { data, error } = await supabase
         .from('categories')
         .insert([{
           ...category,
-          user_id: userData.id,
+          user_id: user.id,
         }])
         .select()
         .single();

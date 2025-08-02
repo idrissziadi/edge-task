@@ -92,29 +92,38 @@ export const AdminPage = () => {
     try {
       setLoading(true);
       
-      // Fetch system stats
-      const { data: statsData, error: statsError } = await supabase.functions.invoke('admin-controller', {
-        body: { action: 'getSystemStats' }
+      // Fetch system stats directement
+      const { count: totalUsers } = await supabase
+        .from('user_profiles')
+        .select('*', { count: 'exact', head: true });
+
+      const { count: totalTasks } = await supabase
+        .from('tasks')
+        .select('*', { count: 'exact', head: true });
+
+      const { count: completedTasks } = await supabase
+        .from('tasks')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_completed', true);
+
+      setStats({
+        totalUsers: totalUsers || 0,
+        totalTasks: totalTasks || 0,
+        completedTasks: completedTasks || 0,
+        activeUsers: 0 // Simulé pour l'instant
       });
 
-      if (statsError) throw statsError;
-      setStats(statsData || {});
+      // Fetch users (simulé pour l'instant)
+      setUsers([]);
 
-      // Fetch users
-      const { data: usersData, error: usersError } = await supabase.functions.invoke('admin-controller', {
-        body: { action: 'getAllUsers' }
-      });
+      // Fetch tasks (limité aux 20 premières)
+      const { data: tasksData } = await supabase
+        .from('tasks')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
 
-      if (usersError) throw usersError;
-      setUsers(usersData?.users || []);
-
-      // Fetch all tasks
-      const { data: tasksData, error: tasksError } = await supabase.functions.invoke('admin-controller', {
-        body: { action: 'getAllTasks' }
-      });
-
-      if (tasksError) throw tasksError;
-      setTasks(tasksData?.tasks || []);
+      setTasks(tasksData || []);
 
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -130,12 +139,8 @@ export const AdminPage = () => {
 
   const deleteUser = async (userId: string) => {
     try {
-      const { error } = await supabase.functions.invoke('admin-controller', {
-        body: { 
-          action: 'deleteUser',
-          userId 
-        }
-      });
+      // Supprimer directement (nécessite des permissions admin)
+      const { error } = await supabase.auth.admin.deleteUser(userId);
 
       if (error) throw error;
       
@@ -156,12 +161,10 @@ export const AdminPage = () => {
 
   const deleteTask = async (taskId: string) => {
     try {
-      const { error } = await supabase.functions.invoke('admin-controller', {
-        body: { 
-          action: 'deleteTask',
-          taskId 
-        }
-      });
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', taskId);
 
       if (error) throw error;
       

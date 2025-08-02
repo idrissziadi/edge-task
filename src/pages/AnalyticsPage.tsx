@@ -22,6 +22,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatUserForHeader } from "@/lib/utils";
+import { taskService } from "@/lib/taskService";
+import { goalService } from "@/lib/goalService";
 
 interface AnalyticsData {
   dailyStats: any[];
@@ -63,32 +65,33 @@ export const AnalyticsPage = () => {
     try {
       setLoading(true);
       
-      // Load daily stats
-      const dailyResponse = await supabase.functions.invoke('productivity-service', {
-        body: { action: 'daily-stats' }
-      });
-
-      // Load weekly stats
-      const weeklyResponse = await supabase.functions.invoke('productivity-service', {
-        body: { action: 'weekly-stats' }
-      });
-
-      // Load monthly stats
-      const monthlyResponse = await supabase.functions.invoke('productivity-service', {
-        body: { action: 'monthly-stats' }
-      });
-
-      // Load trends
-      const trendsResponse = await supabase.functions.invoke('productivity-service', {
-        body: { action: 'productivity-trends' }
-      });
-
-      // Simulate additional analytics data
+      // Charger les données directement depuis les services
+      const taskStats = await taskService.getTaskStats();
+      const goalStats = await goalService.getGoalStats();
+      
+      // Générer des données d'analyse simulées basées sur les vraies données
       const mockAnalytics: AnalyticsData = {
-        dailyStats: dailyResponse.data?.stats ? [dailyResponse.data.stats] : [],
-        weeklyStats: weeklyResponse.data?.weeklyStats || {},
-        monthlyStats: monthlyResponse.data?.monthlyStats || {},
-        trends: trendsResponse.data?.trends || [],
+        dailyStats: [{
+          completionRate: taskStats.completionRate,
+          totalTasks: taskStats.total,
+          completedTasks: taskStats.completed
+        }],
+        weeklyStats: {
+          dailyStats: Array.from({ length: 7 }, (_, i) => ({
+            dayName: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i],
+            completed: Math.floor(Math.random() * 10),
+            created: Math.floor(Math.random() * 15)
+          }))
+        },
+        monthlyStats: {
+          totalCompleted: taskStats.completed,
+          totalCreated: taskStats.total,
+          completionRate: taskStats.completionRate
+        },
+        trends: Array.from({ length: 30 }, (_, i) => ({
+          date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          completed: Math.floor(Math.random() * 8)
+        })),
         productivity: {
           averageCompletionTime: 2.5,
           mostProductiveHour: 10,
@@ -97,7 +100,11 @@ export const AnalyticsPage = () => {
         },
         taskDistribution: {
           byPriority: { high: 15, medium: 35, low: 20 },
-          byStatus: { completed: 45, pending: 20, overdue: 5 },
+          byStatus: { 
+            completed: taskStats.completed, 
+            pending: taskStats.pending, 
+            overdue: taskStats.overdue 
+          },
           byCategory: [
             { name: 'Work', count: 25, color: '#3b82f6' },
             { name: 'Personal', count: 20, color: '#10b981' },

@@ -150,7 +150,7 @@ export const DatabaseTest: React.FC = () => {
       const testCategory = await categoryService.createCategory({
         name: 'Test Category',
         color: '#3B82F6',
-        icon: 'test'
+        description: 'Test category description'
       });
 
       if (testCategory) {

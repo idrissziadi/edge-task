@@ -22,19 +22,10 @@ export const calendarService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Get user's internal ID first
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
-
-      if (userError) throw userError;
-
       const { data, error } = await supabase
         .from('calendar_events')
         .select('*')
-        .eq('user_id', userData.id)
+        .eq('user_id', user.id)
         .order('start_time', { ascending: true });
 
       if (error) throw error;
@@ -51,20 +42,11 @@ export const calendarService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Get user's internal ID first
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
-
-      if (userError) throw userError;
-
       const { data, error } = await supabase
         .from('calendar_events')
         .insert([{
           ...event,
-          user_id: userData.id,
+          user_id: user.id,
         }])
         .select()
         .single();
@@ -117,19 +99,10 @@ export const calendarService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Get user's internal ID first
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
-
-      if (userError) throw userError;
-
       const { data, error } = await supabase
         .from('calendar_events')
         .select('*')
-        .eq('user_id', userData.id)
+        .eq('user_id', user.id)
         .gte('start_time', startDate)
         .lte('end_time', endDate)
         .order('start_time');

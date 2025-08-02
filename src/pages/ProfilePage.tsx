@@ -11,6 +11,8 @@ import { User, Mail, Calendar, Settings, Shield, CheckSquare } from "lucide-reac
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatUserForHeader } from "@/lib/utils";
+import { taskService } from "@/lib/taskService";
+import { goalService } from "@/lib/goalService";
 
 export const ProfilePage = () => {
   const [user, setUser] = useState<any>(null);
@@ -52,16 +54,14 @@ export const ProfilePage = () => {
 
   const fetchUserStats = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('productivity-service', {
-        body: { action: 'getDailyStats' }
-      });
+      // Utiliser directement les services locaux
+      const taskStats = await taskService.getTaskStats();
+      const goalStats = await goalService.getGoalStats();
 
-      if (error) throw error;
-      
       setStats({
-        totalTasks: data?.totalTasks || 0,
-        completedTasks: data?.completedTasks || 0,
-        completionRate: data?.completionRate || 0
+        totalTasks: taskStats.total,
+        completedTasks: taskStats.completed,
+        completionRate: taskStats.completionRate
       });
     } catch (error) {
       console.error('Error fetching stats:', error);

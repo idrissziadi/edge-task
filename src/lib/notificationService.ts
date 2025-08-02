@@ -18,19 +18,10 @@ export const notificationService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Get user's internal ID first
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
-
-      if (userError) throw userError;
-
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', userData.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -63,19 +54,10 @@ export const notificationService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Get user's internal ID first
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
-
-      if (userError) throw userError;
-
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
-        .eq('user_id', userData.id)
+        .eq('user_id', user.id)
         .eq('is_read', false);
 
       if (error) throw error;
@@ -92,21 +74,50 @@ export const notificationService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Get user's internal ID first
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
-
-      if (userError) throw userError;
-
       const { count, error } = await supabase
         .from('notifications')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', userData.id)
+        .eq('user_id', user.id)
         .eq('is_read', false);
 
+  // Créer une nouvelle notification
+  async createNotification(notification: Omit<Notification, 'id' | 'created_at' | 'user_id'>): Promise<Notification | null> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('notifications')
+        .insert([{
+          ...notification,
+          user_id: user.id,
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error creating notification:', error);
+      return null;
+    }
+  },
+
+  // Supprimer une notification
+  async deleteNotification(id: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      return false;
+    }
+  }
       if (error) throw error;
       return count || 0;
     } catch (error) {
