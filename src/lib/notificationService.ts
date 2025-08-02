@@ -80,6 +80,14 @@ export const notificationService = {
         .eq('user_id', user.id)
         .eq('is_read', false);
 
+      if (error) throw error;
+      return count || 0;
+    } catch (error) {
+      console.error('Error getting unread count:', error);
+      return 0;
+    }
+  },
+
   // Créer une nouvelle notification
   async createNotification(notification: Omit<Notification, 'id' | 'created_at' | 'user_id'>): Promise<Notification | null> {
     try {
@@ -116,13 +124,6 @@ export const notificationService = {
     } catch (error) {
       console.error('Error deleting notification:', error);
       return false;
-    }
-  }
-      if (error) throw error;
-      return count || 0;
-    } catch (error) {
-      console.error('Error getting unread count:', error);
-      return 0;
     }
   }
 };
