@@ -94,7 +94,7 @@ export const AdminPage = () => {
       
       // Fetch system stats directement
       const { count: totalUsers } = await supabase
-        .from('user_profiles')
+        .from('users')
         .select('*', { count: 'exact', head: true });
 
       const { count: totalTasks } = await supabase

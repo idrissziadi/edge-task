@@ -25,7 +25,7 @@ export const notificationService = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as Notification[];
     } catch (error) {
       console.error('Error fetching notifications:', error);
       return [];
@@ -104,7 +104,7 @@ export const notificationService = {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as Notification;
     } catch (error) {
       console.error('Error creating notification:', error);
       return null;

@@ -579,30 +579,11 @@ export const GoalsPage = () => {
                       </div>
                     )}
 
-                    {/* Milestones */}
-                    {goal.milestones.length > 0 && (
-                      <div>
-                        <p className="text-sm font-medium mb-2">Milestones</p>
-                        <div className="space-y-1">
-                          {goal.milestones.slice(0, 3).map((milestone) => (
-                            <div key={milestone.id} className="flex items-center gap-2 text-xs">
-                              {milestone.is_completed ? (
-                                <CheckCircle className="h-3 w-3 text-green-600" />
-                              ) : (
-                                <Circle className="h-3 w-3 text-muted-foreground" />
-                              )}
-                              <span className={milestone.is_completed ? 'line-through text-muted-foreground' : ''}>
-                                {milestone.title}
-                              </span>
-                            </div>
-                          ))}
-                          {goal.milestones.length > 3 && (
-                            <p className="text-xs text-muted-foreground">
-                              +{goal.milestones.length - 3} more milestones
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                    {/* Notes */}
+                    {goal.description && (
+                      <p className="text-sm text-muted-foreground">
+                        {goal.description}
+                      </p>
                     )}
 
                     {/* Update Progress */}

@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Bell, Menu, Search, Settings, Home, CheckSquare, Calendar, BarChart3, Target, User, LogOut } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
-interface HeaderProps {
+export interface HeaderProps {
   onMenuClick?: () => void;
   onSearchClick?: () => void;
   onNotificationsClick?: () => void;
@@ -15,6 +15,7 @@ interface HeaderProps {
     email: string;
     avatar?: string;
   };
+  showNavigation?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({

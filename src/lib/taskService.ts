@@ -9,6 +9,7 @@ export interface Task {
   is_completed: boolean;
   is_recurring: boolean;
   recurrence_rule?: string;
+  category_id?: string;
   created_at: string;
   updated_at: string;
   user_id: string;
@@ -36,7 +37,7 @@ export const taskService = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as Task[];
     } catch (error) {
       console.error('Error fetching tasks:', error);
       return [];
@@ -67,7 +68,7 @@ export const taskService = {
       }
       
       console.log('Task created successfully:', data);
-      return data;
+      return data as Task;
     } catch (error) {
       console.error('Error creating task:', error);
       return null;
@@ -85,7 +86,7 @@ export const taskService = {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as Task;
     } catch (error) {
       console.error('Error updating task:', error);
       return null;

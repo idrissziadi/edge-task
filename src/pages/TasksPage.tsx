@@ -228,18 +228,24 @@ export const TasksPage = () => {
   });
 
   const sortedTasks = [...filteredTasks].sort((a, b) => {
-    let aValue = a[sortBy as keyof Task];
-    let bValue = b[sortBy as keyof Task];
-    
     if (sortBy === 'deadline') {
-      aValue = aValue ? new Date(aValue as string).getTime() : 0;
-      bValue = bValue ? new Date(bValue as string).getTime() : 0;
+      const aTime = a.deadline ? new Date(a.deadline).getTime() : Number.MAX_SAFE_INTEGER;
+      const bTime = b.deadline ? new Date(b.deadline).getTime() : Number.MAX_SAFE_INTEGER;
+      
+      if (sortOrder === 'asc') {
+        return aTime - bTime;
+      } else {
+        return bTime - aTime;
+      }
     }
     
+    const aValue = a[sortBy as keyof Task] as string;
+    const bValue = b[sortBy as keyof Task] as string;
+    
     if (sortOrder === 'asc') {
-      return aValue > bValue ? 1 : -1;
+      return aValue?.localeCompare(bValue) || 0;
     } else {
-      return aValue < bValue ? 1 : -1;
+      return bValue?.localeCompare(aValue) || 0;
     }
   });
   const getPriorityColor = (priority: string) => {

@@ -38,7 +38,7 @@ export const goalService = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as Goal[];
     } catch (error) {
       console.error('Error fetching goals:', error);
       return [];
@@ -61,7 +61,7 @@ export const goalService = {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as Goal;
     } catch (error) {
       console.error('Error creating goal:', error);
       return null;
@@ -79,7 +79,7 @@ export const goalService = {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as Goal;
     } catch (error) {
       console.error('Error updating goal:', error);
       return null;
