@@ -14,30 +14,243 @@ export type Database = {
   }
   public: {
     Tables: {
-      productivity_stats: {
+      calendar_events: {
         Row: {
-          completed_today: number | null
-          focus_mode_enabled: boolean
+          all_day: boolean | null
+          category_id: string | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          end_time: string
+          id: string
+          location: string | null
+          start_time: string
+          title: string
+          updated_at: string | null
           user_id: string
-          weekly_completed: number | null
         }
         Insert: {
-          completed_today?: number | null
-          focus_mode_enabled?: boolean
+          all_day?: boolean | null
+          category_id?: string | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_time: string
+          id?: string
+          location?: string | null
+          start_time: string
+          title: string
+          updated_at?: string | null
           user_id: string
-          weekly_completed?: number | null
         }
         Update: {
-          completed_today?: number | null
-          focus_mode_enabled?: boolean
+          all_day?: boolean | null
+          category_id?: string | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_time?: string
+          id?: string
+          location?: string | null
+          start_time?: string
+          title?: string
+          updated_at?: string | null
           user_id?: string
-          weekly_completed?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "fk_user_stats"
+            foreignKeyName: "calendar_events_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_events_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: true
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      categories: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goals: {
+        Row: {
+          category: string
+          created_at: string | null
+          current_value: number | null
+          deadline: string | null
+          description: string | null
+          id: string
+          is_completed: boolean | null
+          priority: string | null
+          target_value: number
+          title: string
+          unit: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          current_value?: number | null
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          is_completed?: boolean | null
+          priority?: string | null
+          target_value?: number
+          title: string
+          unit?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          current_value?: number | null
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          is_completed?: boolean | null
+          priority?: string | null
+          target_value?: number
+          title?: string
+          unit?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          title: string
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          title: string
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          title?: string
+          type?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      productivity_stats: {
+        Row: {
+          created_at: string | null
+          date: string
+          focus_time_minutes: number | null
+          goals_achieved: number | null
+          id: string
+          productivity_score: number | null
+          tasks_completed: number | null
+          tasks_created: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          focus_time_minutes?: number | null
+          goals_achieved?: number | null
+          id?: string
+          productivity_score?: number | null
+          tasks_completed?: number | null
+          tasks_created?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          focus_time_minutes?: number | null
+          goals_achieved?: number | null
+          id?: string
+          productivity_score?: number | null
+          tasks_completed?: number | null
+          tasks_created?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "productivity_stats_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -45,21 +258,35 @@ export type Database = {
       }
       tags: {
         Row: {
-          color: string
+          color: string | null
+          created_at: string | null
           id: string
           name: string
+          user_id: string
         }
         Insert: {
-          color: string
+          color?: string | null
+          created_at?: string | null
           id?: string
           name: string
+          user_id: string
         }
         Update: {
-          color?: string
+          color?: string | null
+          created_at?: string | null
           id?: string
           name?: string
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tags_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       task_tags: {
         Row: {
@@ -76,14 +303,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_tag"
+            foreignKeyName: "task_tags_tag_id_fkey"
             columns: ["tag_id"]
             isOneToOne: false
             referencedRelation: "tags"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_task"
+            foreignKeyName: "task_tags_task_id_fkey"
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "tasks"
@@ -93,47 +320,60 @@ export type Database = {
       }
       tasks: {
         Row: {
-          created_at: string
+          category_id: string | null
+          completed_at: string | null
+          created_at: string | null
           deadline: string | null
           description: string | null
           id: string
-          is_completed: boolean
-          is_recurring: boolean
-          priority: Database["public"]["Enums"]["priority_type"] | null
+          is_completed: boolean | null
+          is_recurring: boolean | null
+          priority: string | null
           recurrence_rule: string | null
           title: string
-          updated_at: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
-          created_at?: string
+          category_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
           deadline?: string | null
           description?: string | null
           id?: string
-          is_completed?: boolean
-          is_recurring?: boolean
-          priority?: Database["public"]["Enums"]["priority_type"] | null
+          is_completed?: boolean | null
+          is_recurring?: boolean | null
+          priority?: string | null
           recurrence_rule?: string | null
           title: string
-          updated_at?: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
-          created_at?: string
+          category_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
           deadline?: string | null
           description?: string | null
           id?: string
-          is_completed?: boolean
-          is_recurring?: boolean
-          priority?: Database["public"]["Enums"]["priority_type"] | null
+          is_completed?: boolean | null
+          is_recurring?: boolean | null
+          priority?: string | null
           recurrence_rule?: string | null
           title?: string
-          updated_at?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "fk_user"
+            foreignKeyName: "tasks_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
@@ -141,30 +381,86 @@ export type Database = {
           },
         ]
       }
-      users: {
+      user_settings: {
         Row: {
-          auth_user_id: string | null
-          created_at: string
+          created_at: string | null
+          daily_goal_reminder: boolean | null
+          email_notifications: boolean | null
           id: string
-          name: string
-          role: string
-          updated_at: string
+          language: string | null
+          notifications_enabled: boolean | null
+          theme: string | null
+          updated_at: string | null
+          user_id: string
+          work_hours_end: string | null
+          work_hours_start: string | null
         }
         Insert: {
-          auth_user_id?: string | null
-          created_at?: string
+          created_at?: string | null
+          daily_goal_reminder?: boolean | null
+          email_notifications?: boolean | null
           id?: string
-          name: string
-          role?: string
-          updated_at?: string
+          language?: string | null
+          notifications_enabled?: boolean | null
+          theme?: string | null
+          updated_at?: string | null
+          user_id: string
+          work_hours_end?: string | null
+          work_hours_start?: string | null
         }
         Update: {
-          auth_user_id?: string | null
-          created_at?: string
+          created_at?: string | null
+          daily_goal_reminder?: boolean | null
+          email_notifications?: boolean | null
           id?: string
-          name?: string
-          role?: string
-          updated_at?: string
+          language?: string | null
+          notifications_enabled?: boolean | null
+          theme?: string | null
+          updated_at?: string | null
+          user_id?: string
+          work_hours_end?: string | null
+          work_hours_start?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          auth_user_id: string
+          avatar_url: string | null
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          timezone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          auth_user_id: string
+          avatar_url?: string | null
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id?: string
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          auth_user_id?: string
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          timezone?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -173,7 +469,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_default_categories_for_user: {
+        Args: { user_uuid: string }
+        Returns: undefined
+      }
+      create_default_user_settings: {
+        Args: { user_uuid: string }
+        Returns: undefined
+      }
     }
     Enums: {
       priority_type: "low" | "medium" | "high"
