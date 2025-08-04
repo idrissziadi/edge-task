@@ -10,12 +10,14 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatUserForHeader } from '@/lib/utils';
+import { useTheme } from '@/components/ThemeProvider';
 import { Settings, Bell, Shield, Palette, Clock, Save } from 'lucide-react';
 
 export const SettingsPage = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { theme, setTheme } = useTheme();
   const [settings, setSettings] = useState({
     notifications_enabled: true,
     email_notifications: true,
@@ -248,9 +250,9 @@ export const SettingsPage = () => {
                   <div className="space-y-2">
                     <Label htmlFor="theme">Theme</Label>
                     <Select 
-                      value={settings.theme} 
+                      value={theme} 
                       onValueChange={(value) => 
-                        setSettings(prev => ({ ...prev, theme: value }))
+                        setTheme(value as "light" | "dark" | "system")
                       }
                     >
                       <SelectTrigger>

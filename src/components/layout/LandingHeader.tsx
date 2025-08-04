@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '../ui/button';
 import { CheckSquare, ArrowRight, Menu } from 'lucide-react';
+import { ThemeToggle } from '../ui/theme-toggle';
 import { Link } from 'react-router-dom';
 
 export const LandingHeader: React.FC = () => {
@@ -36,6 +37,7 @@ export const LandingHeader: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-4">
+            <ThemeToggle />
             <Link to="/auth">
               <Button variant="ghost" className="hidden sm:inline-flex">
                 Login

@@ -15,8 +15,18 @@ import {
   Calendar,
   BarChart3,
   Target,
-  LogOut
+  LogOut,
+  User
 } from 'lucide-react';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Link, useLocation } from 'react-router-dom';
 
 export interface HeaderProps {
@@ -117,37 +127,45 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="sr-only">Notifications</span>
             </Button>
 
-            <Link to="/settings">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onSettingsClick}
-              >
-                <Settings className="h-5 w-5" />
-                <span className="sr-only">Settings</span>
-              </Button>
-            </Link>
+            <ThemeToggle />
 
             {user && (
-              <div className="flex items-center gap-2">
-                <Link to="/profile">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all">
                     <AvatarImage src={user.avatar} alt={user.name || 'User'} />
                     <AvatarFallback>
                       {user.name ? user.name.split(' ').map(n => n[0]).join('') : 'U'}
                     </AvatarFallback>
                   </Avatar>
-                </Link>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onLogout}
-                  title="Logout"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span className="sr-only">Logout</span>
-                </Button>
-              </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user.name || 'User'}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onLogout} className="cursor-pointer text-destructive focus:text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </nav>
         </div>

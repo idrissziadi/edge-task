@@ -71,7 +71,7 @@ export const LandingPage = () => {
             <span>Trusted by 10,000+ professionals</span>
           </div>
           
-          <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent leading-tight">
+          <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent leading-tight dark:text-white">
             Master Your Tasks,
             <br />
             Boost Your Productivity
