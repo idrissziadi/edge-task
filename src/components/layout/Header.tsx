@@ -1,7 +1,22 @@
 import React from 'react';
 import { Button } from '../ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Bell, Menu, Search, Settings, Home, CheckSquare, Calendar, BarChart3, Target, User, LogOut } from 'lucide-react';
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage
+} from '../ui/avatar';
+import {
+  Bell,
+  Menu,
+  Search,
+  Settings,
+  Home,
+  CheckSquare,
+  Calendar,
+  BarChart3,
+  Target,
+  LogOut
+} from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export interface HeaderProps {
@@ -33,14 +48,16 @@ export const Header: React.FC<HeaderProps> = ({
     { href: '/tasks', label: 'Tasks', icon: CheckSquare },
     { href: '/calendar', label: 'Calendar', icon: Calendar },
     { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-    { href: '/goals', label: 'Goals', icon: Target },
+    { href: '/goals', label: 'Goals', icon: Target }
   ];
 
   const isActive = (href: string) => location.pathname === href;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
+      <div className="container relative flex h-14 items-center">
+
+        {/* Logo & Mobile Menu Button */}
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -53,20 +70,18 @@ export const Header: React.FC<HeaderProps> = ({
           </Button>
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-primary"></div>
-            <span className="hidden font-bold sm:inline-block">
-              Edge Task
-            </span>
+            <span className="hidden font-bold sm:inline-block">Edge Task</span>
           </div>
         </div>
-        
-        {/* Navigation Menu - Desktop */}
-        <nav className="hidden md:flex items-center space-x-1 ml-8">
+
+        {/* 👇 Navigation Centrée */}
+        <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center space-x-1">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link key={item.href} to={item.href}>
                 <Button
-                  variant={isActive(item.href) ? "default" : "ghost"}
+                  variant={isActive(item.href) ? 'default' : 'ghost'}
                   size="sm"
                   className="flex items-center gap-2"
                 >
@@ -77,8 +92,9 @@ export const Header: React.FC<HeaderProps> = ({
             );
           })}
         </nav>
-        
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+
+        {/* Actions (Search, Notifications, Settings, Avatar) */}
+        <div className="flex flex-1 items-center justify-end space-x-2">
           <div className="w-full flex-1 md:w-auto md:flex-none">
             <Button
               variant="ghost"
@@ -90,7 +106,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="sr-only">Search</span>
             </Button>
           </div>
-          
+
           <nav className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -100,7 +116,7 @@ export const Header: React.FC<HeaderProps> = ({
               <Bell className="h-5 w-5" />
               <span className="sr-only">Notifications</span>
             </Button>
-            
+
             <Link to="/settings">
               <Button
                 variant="ghost"
@@ -111,7 +127,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="sr-only">Settings</span>
               </Button>
             </Link>
-            
+
             {user && (
               <div className="flex items-center gap-2">
                 <Link to="/profile">
