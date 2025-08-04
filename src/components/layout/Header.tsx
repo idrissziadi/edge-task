@@ -34,7 +34,6 @@ export const Header: React.FC<HeaderProps> = ({
     { href: '/calendar', label: 'Calendar', icon: Calendar },
     { href: '/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/goals', label: 'Goals', icon: Target },
-    { href: '/profile', label: 'Profile', icon: User },
   ];
 
   const isActive = (href: string) => location.pathname === href;
@@ -102,23 +101,27 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="sr-only">Notifications</span>
             </Button>
             
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onSettingsClick}
-            >
-              <Settings className="h-5 w-5" />
-              <span className="sr-only">Settings</span>
-            </Button>
+            <Link to="/settings">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onSettingsClick}
+              >
+                <Settings className="h-5 w-5" />
+                <span className="sr-only">Settings</span>
+              </Button>
+            </Link>
             
             {user && (
               <div className="flex items-center gap-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={user.avatar} alt={user.name || 'User'} />
-                  <AvatarFallback>
-                    {user.name ? user.name.split(' ').map(n => n[0]).join('') : 'U'}
-                  </AvatarFallback>
-                </Avatar>
+                <Link to="/profile">
+                  <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all">
+                    <AvatarImage src={user.avatar} alt={user.name || 'User'} />
+                    <AvatarFallback>
+                      {user.name ? user.name.split(' ').map(n => n[0]).join('') : 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
                 <Button
                   variant="ghost"
                   size="icon"

@@ -2,6 +2,7 @@ import React from "react";
 import { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 
 export interface FeatureCardProps {
   title: string;
@@ -40,7 +41,18 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
   buttonVariant = "default",
   onClick,
   className = "",
+  href
 }) => {
+  const CardButton = () => (
+    <Button 
+      variant={buttonVariant} 
+      onClick={onClick}
+      className="w-full transition-smooth"
+    >
+      {buttonText}
+    </Button>
+  );
+
   return (
     <Card className={`group transition-all duration-300 hover:shadow-hover hover:-translate-y-1 cursor-pointer ${className}`}>
       <CardHeader className="text-center pb-4">
@@ -53,13 +65,13 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
         <CardDescription className="text-sm leading-relaxed">
           {description}
         </CardDescription>
-        <Button 
-          variant={buttonVariant} 
-          onClick={onClick}
-          className="w-full transition-smooth"
-        >
-          {buttonText}
-        </Button>
+        {href ? (
+          <Link to={href}>
+            <CardButton />
+          </Link>
+        ) : (
+          <CardButton />
+        )}
       </CardContent>
     </Card>
   );

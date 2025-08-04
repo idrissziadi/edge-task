@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { FeatureCard } from "@/components/ui/feature-card";
-import { Header } from "@/components/layout/Header";
+import { LandingHeader } from "@/components/layout/LandingHeader";
 import {
   CheckSquare,
   BarChart3,
@@ -61,7 +61,7 @@ export const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <Header showNavigation={false} />
+      <LandingHeader />
       
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20">
