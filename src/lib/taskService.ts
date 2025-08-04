@@ -74,9 +74,6 @@ export const taskService = {
       const userId = await this.getUserId();
       if (!userId) throw new Error('User not authenticated');
 
-      console.log('Creating task for user:', userId);
-      console.log('Task data:', task);
-
       const { data, error } = await supabase
         .from('tasks')
         .insert([{
@@ -87,11 +84,10 @@ export const taskService = {
         .single();
 
       if (error) {
-        console.error('Supabase error:', error);
+        console.error('Error creating task:', error);
         throw error;
       }
       
-      console.log('Task created successfully:', data);
       return data as Task;
     } catch (error) {
       console.error('Error creating task:', error);

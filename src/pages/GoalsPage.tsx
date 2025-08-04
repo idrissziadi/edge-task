@@ -143,11 +143,14 @@ export const GoalsPage = () => {
 
   const updateGoalProgress = async (goalId: string, newValue: number) => {
     try {
-      const success = await goalService.updateProgress(goalId, newValue);
+      const goal = goals.find(g => g.id === goalId);
+      if (!goal) return;
+      
+      const success = await goalService.updateProgress(goalId, newValue, goal.target_value);
       
       if (success) {
         setGoals(prev => prev.map(goal => 
-          goal.id === goalId 
+          goal.id === goalId
             ? { ...goal, current_value: newValue, is_completed: newValue >= goal.target_value }
             : goal
         ));

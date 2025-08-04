@@ -85,7 +85,10 @@ export const goalService = {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating goal:', error);
+        throw error;
+      }
       return data as Goal;
     } catch (error) {
       console.error('Error creating goal:', error);
@@ -159,13 +162,13 @@ export const goalService = {
     }
   },
 
-  async updateProgress(id: string, currentValue: number): Promise<boolean> {
+  async updateProgress(id: string, currentValue: number, targetValue: number): Promise<boolean> {
     try {
       const { error } = await supabase
         .from('goals')
         .update({ 
           current_value: currentValue,
-          is_completed: currentValue >= 100
+          is_completed: currentValue >= targetValue
         })
         .eq('id', id);
 
