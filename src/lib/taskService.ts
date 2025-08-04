@@ -24,16 +24,40 @@ export interface TaskStats {
 }
 
 export const taskService = {
+  // Récupérer le user_id depuis la table users
+  async getUserId(): Promise<string | null> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error getting user_id:', error);
+        return null;
+      }
+      
+      return data.id;
+    } catch (error) {
+      console.error('Error getting user_id:', error);
+      return null;
+    }
+  },
+
   // Récupérer toutes les tâches de l'utilisateur
   async getTasks(): Promise<Task[]> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      const userId = await this.getUserId();
+      if (!userId) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -47,17 +71,17 @@ export const taskService = {
   // Créer une nouvelle tâche
   async createTask(task: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Task | null> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      const userId = await this.getUserId();
+      if (!userId) throw new Error('User not authenticated');
 
-      console.log('Creating task for user:', user.id);
+      console.log('Creating task for user:', userId);
       console.log('Task data:', task);
 
       const { data, error } = await supabase
         .from('tasks')
         .insert([{
           ...task,
-          user_id: user.id,
+          user_id: userId,
         }])
         .select()
         .single();
@@ -162,4 +186,4 @@ export const taskService = {
       return false;
     }
   }
-}; 
+};

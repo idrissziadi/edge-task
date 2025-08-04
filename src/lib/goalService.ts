@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Goal {
@@ -25,16 +26,40 @@ export interface GoalStats {
 }
 
 export const goalService = {
+  // Récupérer le user_id depuis la table users
+  async getUserId(): Promise<string | null> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error getting user_id:', error);
+        return null;
+      }
+      
+      return data.id;
+    } catch (error) {
+      console.error('Error getting user_id:', error);
+      return null;
+    }
+  },
+
   // Récupérer tous les objectifs de l'utilisateur
   async getGoals(): Promise<Goal[]> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      const userId = await this.getUserId();
+      if (!userId) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
         .from('goals')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -48,14 +73,14 @@ export const goalService = {
   // Créer un nouvel objectif
   async createGoal(goal: Omit<Goal, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Goal | null> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      const userId = await this.getUserId();
+      if (!userId) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
         .from('goals')
         .insert([{
           ...goal,
-          user_id: user.id,
+          user_id: userId,
         }])
         .select()
         .single();
@@ -86,7 +111,6 @@ export const goalService = {
     }
   },
 
-  // Supprimer un objectif
   async deleteGoal(id: string): Promise<boolean> {
     try {
       const { error } = await supabase
@@ -102,7 +126,6 @@ export const goalService = {
     }
   },
 
-  // Récupérer les statistiques des objectifs
   async getGoalStats(): Promise<GoalStats> {
     try {
       const goals = await this.getGoals();
@@ -136,14 +159,13 @@ export const goalService = {
     }
   },
 
-  // Mettre à jour la progression d'un objectif
   async updateProgress(id: string, currentValue: number): Promise<boolean> {
     try {
       const { error } = await supabase
         .from('goals')
         .update({ 
           current_value: currentValue,
-          is_completed: currentValue >= 100 // Marquer comme terminé si 100% atteint
+          is_completed: currentValue >= 100
         })
         .eq('id', id);
 
