@@ -34,6 +34,17 @@ export const SettingsPage = () => {
     loadSettings();
   }, []);
 
+  // Apply language direction on load
+  useEffect(() => {
+    if (settings.language === 'ar') {
+      document.documentElement.dir = 'rtl';
+      document.documentElement.lang = 'ar';
+    } else {
+      document.documentElement.dir = 'ltr';
+      document.documentElement.lang = settings.language;
+    }
+  }, [settings.language]);
+
   const checkUser = async () => {
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
@@ -105,6 +116,20 @@ export const SettingsPage = () => {
           });
 
         if (error) throw error;
+
+        // Apply theme change immediately
+        if (settings.theme !== theme) {
+          setTheme(settings.theme as "light" | "dark" | "system");
+        }
+
+        // Apply RTL for Arabic language
+        if (settings.language === 'ar') {
+          document.documentElement.dir = 'rtl';
+          document.documentElement.lang = 'ar';
+        } else {
+          document.documentElement.dir = 'ltr';
+          document.documentElement.lang = settings.language;
+        }
 
         toast({
           title: "Settings saved",
@@ -280,6 +305,7 @@ export const SettingsPage = () => {
                         <SelectItem value="en">English</SelectItem>
                         <SelectItem value="fr">Français</SelectItem>
                         <SelectItem value="es">Español</SelectItem>
+                        <SelectItem value="ar">العربية</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
