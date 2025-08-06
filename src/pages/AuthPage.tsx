@@ -116,7 +116,7 @@ export const AuthPage = () => {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-primary">
               <CheckSquare className="h-7 w-7 text-white" />
             </div>
-            <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <span className="text-2xl font-bold text-foreground">
               TaskMaster
             </span>
           </Link>

@@ -49,6 +49,7 @@
     --gradient-primary: linear-gradient(135deg, hsl(223 87% 60%), hsl(269 78% 66%));
     --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
     --gradient-hero: linear-gradient(135deg, hsl(223 87% 60%) 0%, hsl(269 78% 66%) 50%, hsl(223 87% 60%) 100%);
+    --gradient-text: linear-gradient(135deg, hsl(223 87% 60%), hsl(269 78% 66%));
     
     /* Shadows élégantes */
     --shadow-card: 0 4px 6px -1px hsl(223 87% 60% / 0.1), 0 2px 4px -1px hsl(223 87% 60% / 0.06);
@@ -127,6 +128,7 @@
     --gradient-primary: linear-gradient(135deg, hsl(223 87% 60%), hsl(269 78% 66%));
     --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
     --gradient-hero: linear-gradient(135deg, hsl(223 87% 60%) 0%, hsl(269 78% 66%) 50%, hsl(223 87% 60%) 100%);
+    --gradient-text: linear-gradient(135deg, hsl(223 87% 70%), hsl(269 78% 76%));
     
     /* Shadows adaptées au mode sombre */
     --shadow-card: 0 4px 6px -1px hsl(0 0% 0% / 0.3), 0 2px 4px -1px hsl(0 0% 0% / 0.2);
@@ -233,5 +235,23 @@
   to {
     transform: translateX(0);
     opacity: 1;
+  }
+}
+
+/* Classe utilitaire pour le texte visible en mode sombre */
+.bg-gradient-text {
+  background: var(--gradient-text);
+}
+
+/* Assurer que les textes avec bg-clip-text sont visibles en mode sombre */
+.dark .bg-clip-text {
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Fallback pour les navigateurs ne supportant pas bg-clip-text */
+@supports not (-webkit-background-clip: text) {
+  .bg-clip-text {
+    color: hsl(var(--foreground));
   }
 }
