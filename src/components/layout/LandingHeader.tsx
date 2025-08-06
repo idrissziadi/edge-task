@@ -21,16 +21,44 @@ export const LandingHeader: React.FC = () => {
 
           {/* Navigation Menu - Desktop */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
+            <a 
+              href="#features" 
+              className="text-muted-foreground hover:text-foreground transition-colors font-medium hover:scale-105 transform"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
               Features
             </a>
-            <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
+            <a 
+              href="#pricing" 
+              className="text-muted-foreground hover:text-foreground transition-colors font-medium hover:scale-105 transform"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
               Pricing
             </a>
-            <a href="#about" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
+            <a 
+              href="#about" 
+              className="text-muted-foreground hover:text-foreground transition-colors font-medium hover:scale-105 transform"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
               About
             </a>
-            <a href="#contact" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
+            <a 
+              href="#contact" 
+              className="text-muted-foreground hover:text-foreground transition-colors font-medium hover:scale-105 transform"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
               Contact
             </a>
           </nav>

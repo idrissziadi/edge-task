@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatUserForHeader } from '@/lib/utils';
 import { User, Mail, Calendar, MapPin, Save, Camera, Award, Activity } from 'lucide-react';
+import { PageWrapper } from "@/components/PageWrapper";
 
 interface UserProfile {
   id: string;
@@ -197,7 +198,7 @@ export const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background" dir={document.documentElement.dir}>
+    <PageWrapper className="min-h-screen bg-background" animationType="fadeInScale" dir={document.documentElement.dir}>
       <Header 
         user={formatUserForHeader(user)} 
         onLogout={handleLogout}
@@ -379,6 +380,6 @@ export const ProfilePage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </PageWrapper>
   );
 };

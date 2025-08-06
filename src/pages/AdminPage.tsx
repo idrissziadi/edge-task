@@ -22,6 +22,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatUserForHeader } from "@/lib/utils";
+import { PageWrapper } from "@/components/PageWrapper";
 
 interface User {
   id: string;
@@ -209,7 +210,7 @@ export const AdminPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <PageWrapper className="min-h-screen bg-background" animationType="fadeInLeft">
               <Header user={formatUserForHeader(user)} onLogout={() => supabase.auth.signOut()} />
       
       <div className="container mx-auto px-4 py-8">
@@ -478,6 +479,6 @@ export const AdminPage = () => {
           </div>
         )}
       </div>
-    </div>
+    </PageWrapper>
   );
 };

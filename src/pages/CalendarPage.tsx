@@ -30,6 +30,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatUserForHeader } from "@/lib/utils";
 import { calendarService, CalendarEvent as CalendarEventType } from "@/lib/calendarService";
 import { taskService, Task } from "@/lib/taskService";
+import { PageWrapper } from "@/components/PageWrapper";
 
 
 export const CalendarPage = () => {
@@ -301,7 +302,7 @@ export const CalendarPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <PageWrapper className="min-h-screen bg-background" animationType="fadeInScale">
               <Header user={formatUserForHeader(user)} onLogout={() => supabase.auth.signOut()} />
       
       <div className="container mx-auto px-4 py-8">
@@ -822,6 +823,6 @@ export const CalendarPage = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </PageWrapper>
   );
 };

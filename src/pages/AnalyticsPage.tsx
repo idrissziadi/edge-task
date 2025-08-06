@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatUserForHeader } from "@/lib/utils";
 import { taskService } from "@/lib/taskService";
 import { goalService } from "@/lib/goalService";
+import { PageWrapper } from "@/components/PageWrapper";
 
 interface AnalyticsData {
   dailyStats: any[];
@@ -266,7 +267,7 @@ export const AnalyticsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <PageWrapper className="min-h-screen bg-background" animationType="slideInTop">
               <Header user={formatUserForHeader(user)} onLogout={() => supabase.auth.signOut()} />
       
       <div className="container mx-auto px-4 py-8">
@@ -712,6 +713,6 @@ export const AnalyticsPage = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </PageWrapper>
   );
 };

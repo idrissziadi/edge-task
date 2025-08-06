@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatUserForHeader } from "@/lib/utils";
 import { taskService, Task } from "@/lib/taskService";
 import { categoryService, Category } from "@/lib/categoryService";
+import { PageWrapper } from "@/components/PageWrapper";
 
 
 
@@ -269,7 +270,7 @@ export const TasksPage = () => {
 
   const stats = getTaskStats();
   return (
-    <div className="min-h-screen bg-background">
+    <PageWrapper className="min-h-screen bg-background" animationType="fadeInLeft">
               <Header 
           user={formatUserForHeader(user)} 
           onLogout={() => supabase.auth.signOut()}
@@ -880,6 +881,6 @@ export const TasksPage = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </PageWrapper>
   );
 };

@@ -19,6 +19,7 @@ import { Link } from "react-router-dom";
 import { formatUserForHeader } from "@/lib/utils";
 import { taskService, TaskStats } from "@/lib/taskService";
 import { goalService, GoalStats } from "@/lib/goalService";
+import { PageWrapper } from "@/components/PageWrapper";
 
 export const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
@@ -154,7 +155,7 @@ export const Dashboard = () => {
 
   console.log('Dashboard - Rendering main content');
   return (
-    <div className="min-h-screen bg-background">
+    <PageWrapper className="min-h-screen bg-background" animationType="fadeInUp">
       <Header 
         user={formatUserForHeader(user)} 
         onLogout={handleLogout}
@@ -297,6 +298,6 @@ export const Dashboard = () => {
           </Card>
         </div>
       </div>
-    </div>
+    </PageWrapper>
   );
 };

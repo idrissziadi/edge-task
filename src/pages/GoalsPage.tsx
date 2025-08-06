@@ -30,6 +30,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatUserForHeader } from "@/lib/utils";
 import { goalService, Goal as GoalType } from "@/lib/goalService";
+import { PageWrapper } from "@/components/PageWrapper";
 
 interface Milestone {
   id: string;
@@ -260,7 +261,7 @@ export const GoalsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <PageWrapper className="min-h-screen bg-background" animationType="fadeInRight">
               <Header user={formatUserForHeader(user)} onLogout={() => supabase.auth.signOut()} />
       
       <div className="container mx-auto px-4 py-8">
@@ -766,6 +767,6 @@ export const GoalsPage = () => {
           </div>
         )}
       </div>
-    </div>
+    </PageWrapper>
   );
 };

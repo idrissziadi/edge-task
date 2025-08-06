@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatUserForHeader } from '@/lib/utils';
 import { useTheme } from '@/components/ThemeProvider';
 import { Settings, Bell, Shield, Palette, Clock, Save } from 'lucide-react';
+import { PageWrapper } from "@/components/PageWrapper";
 
 export const SettingsPage = () => {
   const [user, setUser] = useState<any>(null);
@@ -180,7 +181,7 @@ export const SettingsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <PageWrapper className="min-h-screen bg-background" animationType="bounceIn">
       <Header 
         user={formatUserForHeader(user)} 
         onLogout={handleLogout}
@@ -387,6 +388,6 @@ export const SettingsPage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </PageWrapper>
   );
 };
