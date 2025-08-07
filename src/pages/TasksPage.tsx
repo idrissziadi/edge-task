@@ -386,50 +386,48 @@ export const TasksPage = () => {
 
         {/* Task Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Tasks</p>
-                  <p className="text-2xl font-bold">{stats.total}</p>
+          {[
+            {
+              title: "Total Tasks",
+              value: stats.total,
+              icon: CheckSquare,
+              color: "text-primary"
+            },
+            {
+              title: "Completed",
+              value: stats.completed,
+              icon: CheckSquare,
+              color: "text-green-600"
+            },
+            {
+              title: "Pending",
+              value: stats.pending,
+              icon: Clock,
+              color: "text-yellow-600"
+            },
+            {
+              title: "Overdue",
+              value: stats.overdue,
+              icon: AlertCircle,
+              color: "text-red-600"
+            }
+          ].map((stat, index) => (
+            <Card 
+              key={stat.title}
+              className={`opacity-0 translate-y-4 animate-fade-in-up`}
+              style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards' }}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{stat.title}</p>
+                    <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+                  </div>
+                  <stat.icon className={`h-8 w-8 ${stat.color}`} />
                 </div>
-                <CheckSquare className="h-8 w-8 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
-                </div>
-                <CheckSquare className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
-                </div>
-                <Clock className="h-8 w-8 text-yellow-600" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Overdue</p>
-                  <p className="text-2xl font-bold text-red-600">{stats.overdue}</p>
-                </div>
-                <AlertCircle className="h-8 w-8 text-red-600" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Progress Bar */}

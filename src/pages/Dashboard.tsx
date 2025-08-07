@@ -178,57 +178,49 @@ export const Dashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
-              <CheckSquare className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{taskStats.total}</div>
-              <p className="text-xs text-muted-foreground">
-                {taskStats.total > 0 ? `${taskStats.completionRate}% completion rate` : 'No tasks yet'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{taskStats.completed}</div>
-              <p className="text-xs text-muted-foreground">
-                {taskStats.completionRate}% completion rate
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{taskStats.pending}</div>
-              <p className="text-xs text-muted-foreground">
-                {taskStats.pending > 0 ? 'Tasks waiting for you' : 'No pending tasks'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Overdue</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{taskStats.overdue}</div>
-              <p className="text-xs text-muted-foreground">
-                {taskStats.overdue > 0 ? 'Need attention' : 'All tasks on time'}
-              </p>
-            </CardContent>
-          </Card>
+          {[
+            {
+              title: "Total Tasks",
+              value: taskStats.total,
+              subtitle: taskStats.total > 0 ? `${taskStats.completionRate}% completion rate` : 'No tasks yet',
+              icon: CheckSquare
+            },
+            {
+              title: "Completed",
+              value: taskStats.completed,
+              subtitle: `${taskStats.completionRate}% completion rate`,
+              icon: TrendingUp
+            },
+            {
+              title: "Pending",
+              value: taskStats.pending,
+              subtitle: taskStats.pending > 0 ? 'Tasks waiting for you' : 'No pending tasks',
+              icon: Clock
+            },
+            {
+              title: "Overdue",
+              value: taskStats.overdue,
+              subtitle: taskStats.overdue > 0 ? 'Need attention' : 'All tasks on time',
+              icon: AlertTriangle
+            }
+          ].map((stat, index) => (
+            <Card 
+              key={stat.title}
+              className={`opacity-0 translate-y-4 animate-fade-in-up`}
+              style={{ animationDelay: `${index * 150}ms`, animationFillMode: 'forwards' }}
+            >
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                <stat.icon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stat.value}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stat.subtitle}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Quick Actions */}
