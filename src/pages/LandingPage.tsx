@@ -467,8 +467,8 @@ export const LandingPage = () => {
                   <div>
                     <h4 className="font-semibold">Office</h4>
                     <p className="text-muted-foreground">
-                      123 Productivity Street<br />
-                      San Francisco, CA 94105
+                      Ghardaia, Algeria<br />
+                      Contact: Idriss Ziadi
                     </p>
                   </div>
                 </div>

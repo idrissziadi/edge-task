@@ -5,23 +5,37 @@ interface PageWrapperProps {
   className?: string;
   animationType?: 'fadeInUp' | 'fadeInLeft' | 'fadeInRight' | 'fadeInScale' | 'slideInTop' | 'bounceIn';
   delay?: number;
+  staggerChildren?: boolean;
+  staggerDelay?: number;
 }
 
 export const PageWrapper: React.FC<PageWrapperProps> = ({ 
   children, 
   className = '', 
   animationType = 'fadeInUp',
-  delay = 0 
+  delay = 0,
+  staggerChildren = false,
+  staggerDelay = 150 
 }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [visibleChildren, setVisibleChildren] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(true);
+      
+      if (staggerChildren && React.isValidElement(children)) {
+        const childrenArray = React.Children.toArray(children);
+        childrenArray.forEach((_, index) => {
+          setTimeout(() => {
+            setVisibleChildren(prev => new Set([...prev, index]));
+          }, index * staggerDelay);
+        });
+      }
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [delay]);
+  }, [delay, staggerChildren, staggerDelay, children]);
 
   const getAnimationClass = () => {
     switch (animationType) {

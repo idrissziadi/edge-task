@@ -119,9 +119,7 @@ export const SettingsPage = () => {
         if (error) throw error;
 
         // Apply theme change immediately
-        if (settings.theme !== theme) {
-          setTheme(settings.theme as "light" | "dark" | "system");
-        }
+        setTheme(settings.theme as "light" | "dark" | "system");
 
         // Apply RTL for Arabic language
         if (settings.language === 'ar') {

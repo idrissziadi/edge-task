@@ -198,7 +198,7 @@ export const ProfilePage = () => {
   }
 
   return (
-    <PageWrapper className="min-h-screen bg-background" animationType="fadeInScale" dir={document.documentElement.dir}>
+    <PageWrapper className="min-h-screen bg-background" animationType="fadeInScale">
       <Header 
         user={formatUserForHeader(user)} 
         onLogout={handleLogout}
